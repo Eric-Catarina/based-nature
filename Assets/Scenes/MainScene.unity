@@ -680,7 +680,7 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 0
-  playerAnimator: {fileID: 0}
+  playerAnimator: {fileID: 1828805441}
 --- !u!114 &1039694056
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -962,6 +962,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: f138c6437ae9e6ca1a34a7905eaf0910, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 795d3b2b4f78cefac8478f287894bdc3, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -970,6 +974,11 @@ PrefabInstance:
 --- !u!4 &1828805440 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 795d3b2b4f78cefac8478f287894bdc3, type: 3}
+  m_PrefabInstance: {fileID: 1828805439}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1828805441 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 795d3b2b4f78cefac8478f287894bdc3, type: 3}
   m_PrefabInstance: {fileID: 1828805439}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1833251663
