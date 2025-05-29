@@ -39,6 +39,11 @@ public class PlayerMovement : MonoBehaviour
         }
 
         _rigidbody.freezeRotation = true; // Prevent Rigidbody from tipping over
+
+        // --- CURSOR CONTROL ---
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        // --- END CURSOR CONTROL ---
     }
 
     private void OnEnable()
