@@ -7,10 +7,10 @@ public class EquipmentManager : MonoBehaviour
     public static EquipmentManager Instance { get; private set; }
 
     public List<EquipmentSlotUI> equipmentSlotUIs = new List<EquipmentSlotUI>();
-    public InventoryManager inventoryManager; // Atribua no Inspector
+    public InventoryManager inventoryManager;
 
-    private Dictionary<EquipmentSlotType, ItemData> _equippedItems = new Dictionary<EquipmentSlotType, ItemData>(); // Changed to EquipmentSlotType
-    private Dictionary<EquipmentSlotType, EquipmentSlotUI> _uiSlotMapping = new Dictionary<EquipmentSlotType, EquipmentSlotUI>(); // Changed to EquipmentSlotType
+    private Dictionary<EquipmentSlotType, ItemData> _equippedItems = new Dictionary<EquipmentSlotType, ItemData>();
+    private Dictionary<EquipmentSlotType, EquipmentSlotUI> _uiSlotMapping = new Dictionary<EquipmentSlotType, EquipmentSlotUI>();
 
     void Awake()
     {
@@ -42,7 +42,7 @@ public class EquipmentManager : MonoBehaviour
             if (uiSlot != null)
             {
                 uiSlot.Initialize(this);
-                if (_uiSlotMapping.ContainsKey(uiSlot.slotType)) // Use slotType
+                if (_uiSlotMapping.ContainsKey(uiSlot.slotType))
                 {
                      Debug.LogWarning($"Duplicate EquipmentType {uiSlot.slotType} configured in UI slots. Check your EquipmentSlotUI components.");
                 }
@@ -57,7 +57,7 @@ public class EquipmentManager : MonoBehaviour
         }
     }
 
-    public bool EquipItem(ItemData itemToEquip, int inventorySlotIndexToRemoveFrom)
+    public bool EquipItem(ItemData itemToEquip, int inventorySlotIndexToRemoveFrom) // Pass -1 if item is already 'removed' (e.g., from another equip slot)
     {
         if (itemToEquip == null || !itemToEquip.isEquippable || itemToEquip.equipmentSlotType == EquipmentSlotType.None)
         {
@@ -79,11 +79,16 @@ public class EquipmentManager : MonoBehaviour
         }
 
         _equippedItems[targetSlotType] = itemToEquip;
-        _uiSlotMapping[targetSlotType].DisplayItem(itemToEquip);
+        _uiSlotMapping[targetSlotType].DisplayItem(itemToEquip); // Update UI for the equipped slot
 
         if (inventoryManager != null)
         {
-            inventoryManager.RemoveItemFromSlot(inventorySlotIndexToRemoveFrom, 1);
+            if (inventorySlotIndexToRemoveFrom != -1) // If it came from an inventory slot, remove it
+            {
+                inventoryManager.RemoveItemFromSlot(inventorySlotIndexToRemoveFrom, 1);
+            }
+            // If it came from another equipment slot, it's already logically "removed"
+            // The item previously equipped in this slot goes back to inventory
             if (previouslyEquippedItem != null)
             {
                 inventoryManager.AddItem(previouslyEquippedItem, 1);
@@ -98,7 +103,7 @@ public class EquipmentManager : MonoBehaviour
         return true;
     }
 
-    public void UnequipItem(EquipmentSlotType slotTypeToUnequip) // Changed to EquipmentSlotType
+    public void UnequipItem(EquipmentSlotType slotTypeToUnequip)
     {
         if (!_equippedItems.ContainsKey(slotTypeToUnequip) || _equippedItems[slotTypeToUnequip] == null)
         {
@@ -110,7 +115,7 @@ public class EquipmentManager : MonoBehaviour
 
         if (_uiSlotMapping.ContainsKey(slotTypeToUnequip))
         {
-            _uiSlotMapping[slotTypeToUnequip].ClearSlotDisplay();
+            _uiSlotMapping[slotTypeToUnequip].ClearSlotDisplay(); // Update UI for the unequipped slot
         }
 
         if (inventoryManager != null)

@@ -2115,6 +2115,7 @@ MonoBehaviour:
   inventoryPanel: {fileID: 1232331613}
   slotContainer: {fileID: 1569843958}
   slotPrefab: {fileID: 1778741626115127381, guid: 110897f53eea53f0b9f5deba0acffe82, type: 3}
+  equipmentPanel: {fileID: 420401542}
   tooltipPanel: {fileID: 1897992619}
   tooltipItemNameText: {fileID: 722878557}
   tooltipItemDescriptionText: {fileID: 1556283689}
