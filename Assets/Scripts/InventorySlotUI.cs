@@ -80,6 +80,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        Debug.Log($"Slot {_slotIndex} clicked with button {eventData.button}");
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             if (_inventoryUI != null && _slotData != null && _slotData.itemData != null)
@@ -92,6 +93,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        Debug.Log($"Begin drag on slot {_slotIndex} with button {eventData.button}");
         if (_slotData == null || _slotData.itemData == null || _inventoryUI == null) return;
         if (eventData.button != PointerEventData.InputButton.Left) return;
 
