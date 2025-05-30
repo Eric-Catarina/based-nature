@@ -81,7 +81,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnDrag(PointerEventData eventData)
     {
-        // The InventoryUI's draggedItemImage already follows the mouse, no need to duplicate here
+        _inventoryUIController.draggedItemImage.transform.position = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData)

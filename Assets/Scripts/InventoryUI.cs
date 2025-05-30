@@ -295,6 +295,17 @@ public class InventoryUI : MonoBehaviour
 
         // If dropped outside any valid slot (Inventory or Equipment)
         Debug.Log("Item dropped outside a valid slot.");
+        // Delete item
+        ItemData itemToReturn = inventoryManager.GetSlotAtIndex(fromIndex).itemData;
+        if (itemToReturn != null)
+        {
+            inventoryManager.RemoveItemFromSlot(fromIndex, 1); // Remove item from inventory
+            Debug.Log($"Item {itemToReturn.itemName} removed from inventory.");
+        }
+        else
+        {
+            Debug.LogWarning("No item to return from inventory slot.");
+        }
         UpdateSpecificSlotUI(fromIndex);
     }
     
@@ -346,7 +357,7 @@ public class InventoryUI : MonoBehaviour
                 {
                     EquipmentManager.Instance.UnequipItem(originalFromSlotType);
                     // Add the unequipped item to the inventory (it will try to add to targetInventorySlotUI's index if possible)
-                    InventoryManager.Instance.AddItem(itemToUnequip); // AddItem will find an available slot
+                    // InventoryManager.Instance.AddItem(itemToUnequip); // AddItem will find an available slot
                     // The specific target slot for unequipped items is usually handled by AddItem finding the next available.
                     // If you want to force it to a specific slot, InventoryManager would need a modified AddItem or SetSlotData.
                 }
@@ -357,12 +368,7 @@ public class InventoryUI : MonoBehaviour
             EquipmentSlotUI targetEquipmentSlotUI = dropTargetObject.GetComponentInParent<EquipmentSlotUI>();
             if (targetEquipmentSlotUI != null)
             {
-                // This is a more complex swap logic: unequip original, equip new, then potentially re-equip original to old slot or inventory.
-                // For simplicity, let's just unequip the original item back to inventory if trying to drop on another equipment slot.
-                // A full swap requires handling two items at once.
-                
-                // Let's implement a simple swap:
-                // Get both items involved
+
                 ItemData sourceItem = EquipmentManager.Instance.GetEquippedItem(originalFromSlotType);
                 ItemData targetItem = EquipmentManager.Instance.GetEquippedItem(targetEquipmentSlotUI.slotType);
 
