@@ -10,7 +10,8 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private Transform interactionPoint;
     [SerializeField] private float interactionRadius = 2f;
     [SerializeField] private DialogueSystem dialogueSystem;
-
+private float _lastInteractionTime;
+[SerializeField] private float interactionCooldown = 0.2f; // Ajuste este valor
     // --- Correção: Declarar ambas as listas aqui ---
     private List<TalkableNPC> _nearbyTalkables = new List<TalkableNPC>();
     private List<InteractableWorldItem> _nearbyInteractables = new List<InteractableWorldItem>();
@@ -65,33 +66,30 @@ public class PlayerInteraction : MonoBehaviour
         FindClosestTalkable();
     }
 
-    private void OnInteractInput(InputAction.CallbackContext context)
+private void OnInteractInput(InputAction.CallbackContext context)
+{
+    if (Time.time - _lastInteractionTime < interactionCooldown) // Limita as interações muito rápidas
     {
-        // Se o diálogo está ativo, este input não faz nada no PlayerInteraction.
-        // O DialogueSystem gerencia o input para avançar o diálogo.
-        if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
-        {
-             // Debug.Log("Dialogue is active, PlayerInteraction ignoring Interact input.");
-             return;
-        }
-
-        // Prioriza interação com NPC se houver um próximo e diálogo não estiver ativo
-        if (_closestTalkable != null)
-        {
-            // Inicia/Avança o diálogo via método do NPC (que chama o DialogueSystem)
-            _closestTalkable.StartOrAdvanceDialogue();
-            // Animação de interação pode ser disparada aqui
-            if (playerAnimator != null) playerAnimator.SetTrigger(_interactTriggerHash);
-        }
-        else if (_closestInteractable != null) // Só interage com item se não houver NPC
-        {
-            TryInteract(); // Lógica para pegar itens
-        }
-        else
-        {
-             // Opcional: Debug.Log("No nearby interactable or talkable object.");
-        }
+        return; // Ignora o input se estiver no cooldown
     }
+
+    if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
+    {
+        return;
+    }
+
+    if (_closestTalkable != null)
+    {
+        _closestTalkable.StartOrAdvanceDialogue();
+        if (playerAnimator != null) playerAnimator.SetTrigger(_interactTriggerHash);
+        _lastInteractionTime = Time.time; // Salva o tempo da interação
+    }
+    else if (_closestInteractable != null)
+    {
+        TryInteract();
+        _lastInteractionTime = Time.time; // Salva o tempo da interação
+    }
+}
 
     public void RegisterInteractable(InteractableWorldItem interactable)
     {

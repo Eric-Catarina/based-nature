@@ -6,10 +6,10 @@ using UnityEngine.InputSystem;
 public class DialogueSystem : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private GameObject dialoguePanel; // O painel que contém o texto
+    [SerializeField] private GameObject dialoguePanel;
     [SerializeField] private TextMeshProUGUI npcNameText;
     [SerializeField] private TextMeshProUGUI dialogueText;
-    [SerializeField] private PlayerInput playerInput; // Para mudar o ActionMap
+    [SerializeField] private PlayerInput playerInput;
 
     private TalkableNPC _currentNPC;
     private int _currentDialogueLineIndex;
@@ -25,7 +25,7 @@ public class DialogueSystem : MonoBehaviour
         if (playerInput == null)
         {
             playerInput = FindAnyObjectByType<PlayerInput>(); // Tenta encontrar o PlayerInput
-            if (playerInput == null) Debug.LogError("PlayerInput not found for DialogueSystem Action Map switching.");
+            if (playerInput == null) Debug.LogError("PlayerInput component not found for DialogueSystem Action Map switching.");
         }
     }
 
@@ -47,6 +47,7 @@ public class DialogueSystem : MonoBehaviour
 
         if (!_isDialogueActive || _currentNPC != npc) // Começando um novo diálogo ou com novo NPC
         {
+            Debug.Log($"Starting dialogue with {npc.GetNpcName()}");
             _currentNPC = npc;
             _currentDialogueLineIndex = 0;
             _isDialogueActive = true;
@@ -88,7 +89,9 @@ public class DialogueSystem : MonoBehaviour
         }
         else
         {
+            // --- CORREÇÃO: Chamar EndDialogue quando não houver mais linhas ---
             EndDialogue();
+            // --- Fim Correção ---
         }
     }
 
