@@ -6,6 +6,7 @@ using System;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
+ 
 
     [SerializeField] private int inventorySize = 20;
     public int InventorySize => inventorySize;

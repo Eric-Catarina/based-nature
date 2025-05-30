@@ -6,6 +6,7 @@ using System.Linq; // Importar para usar Linq (RemoveAll)
 
 public class PlayerInteraction : MonoBehaviour
 {
+    [SerializeField] private SoundEffectDefinition interactSound; // Definição do som de interação
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private Transform interactionPoint;
     [SerializeField] private float interactionRadius = 2f;
@@ -226,6 +227,8 @@ private void OnInteractInput(InputAction.CallbackContext context)
             // --- Correção: Usar itemToPick.displayName ---
             Debug.Log($"Picked up {quantityToPick}x {itemToPick.name} from {_closestInteractable.gameObject.name}");
             // --- Fim Correção ---
+
+        AudioManager.Instance.PlaySoundEffect(interactSound); 
 
             GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
 

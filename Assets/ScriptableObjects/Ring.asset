@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Equipable ring
   icon: {fileID: 21300000, guid: a6b8b40d97ce6de03ad89817880f3314, type: 3}
   itemType: 2
-  isStackable: 0
+  isStackable: 1
   maxStackSize: 1
   isUsable: 0
   isEquippable: 1

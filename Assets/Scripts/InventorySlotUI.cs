@@ -61,6 +61,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (_inventoryUIController != null && _currentSlotData != null && !_currentSlotData.IsEmpty())
         {
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.hoverSound); // Play hover sound when showing tooltip
+
             _inventoryUIController.ShowTooltip(_currentSlotData.itemData, GetComponent<RectTransform>());
         }
     }
@@ -83,19 +85,21 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             }
         }
     }
-    
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (_currentSlotData == null || _currentSlotData.IsEmpty() || _inventoryUIController == null)
         {
-            eventData.pointerDrag = null; 
+            eventData.pointerDrag = null;
             return;
         }
-        
+
         _inventoryUIController.OnDragStarted(_slotIndex);
-        if (itemIconImage) itemIconImage.color = new Color(1,1,1, 0.5f); 
+        if (itemIconImage) itemIconImage.color = new Color(1, 1, 1, 0.5f);
         if (quantityText) quantityText.enabled = false;
         if (quantityBackground) quantityBackground.SetActive(false);
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.onDragSound); // Play hover sound when showing tooltip
+
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -114,6 +118,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
              _inventoryUIController.OnDragEnded(_slotIndex, eventData.pointerCurrentRaycast.gameObject);
         }
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.onDropSound); // Play hover sound when showing tooltip
+
         UpdateSlotDisplay(_currentSlotData); // Ensure the original slot visuals are restored or updated
     }
     

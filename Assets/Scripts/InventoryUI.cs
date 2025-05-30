@@ -8,6 +8,7 @@ using TMPro;
 public class InventoryUI : MonoBehaviour
 {
     [Header("Core References")]
+
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private GameObject inventoryPanel; // The root panel of the inventory UI
     [SerializeField] private Transform slotContainer; // Parent object with GridLayoutGroup for slots
@@ -100,6 +101,7 @@ public class InventoryUI : MonoBehaviour
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.pickItemSound); // Play hover sound when opening panel
     }
 
     public void ClosePanel()
@@ -117,6 +119,8 @@ public class InventoryUI : MonoBehaviour
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.dropItemSound); // Play hover sound when opening panel
+
     }
 
     private void CreateSlotUIInstances()
