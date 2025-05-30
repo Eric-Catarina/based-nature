@@ -1339,6 +1339,7 @@ MonoBehaviour:
   inventoryManager: {fileID: 1905772207}
   interactionPoint: {fileID: 0}
   interactionRadius: 2
+  _closestInteractable: {fileID: 0}
   playerAnimator: {fileID: 1828805441}
 --- !u!224 &1068576289 stripped
 RectTransform:
@@ -1780,7 +1781,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 1
+  m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -1995,7 +1996,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1833251664
 RectTransform:
   m_ObjectHideFlags: 0

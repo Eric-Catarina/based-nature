@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Carrot
   m_EditorClassIdentifier: 
   id: 2e10bee4-f7d5-42aa-8574-5ce6fd211eb8
-  displayName: 
+  displayName: Carrot
   description: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: b0c28ae1c7ea25b6a8b4647c7392ee16, type: 3}
   worldPrefab: {fileID: 8455883936801703822, guid: 9ab74f8ab9711b1d2a8c58ea99c11a0c, type: 3}
   itemType: 0
   maxStackSize: 1

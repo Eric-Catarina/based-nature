@@ -6,9 +6,9 @@ using System.Linq;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    [SerializeField] private InventoryManager inventoryManager; // Assign in Inspector
-    [SerializeField] private Transform interactionPoint; // Optional: for raycasting from a specific point
-    [SerializeField] private float interactionRadius = 2f; // If not using raycasting
+    [SerializeField] private InventoryManager inventoryManager;
+    [SerializeField] private Transform interactionPoint;
+    [SerializeField] private float interactionRadius = 2f;
 
     private PlayerControls _playerControls;
     private List<InteractableWorldItem> _nearbyInteractables = new List<InteractableWorldItem>();
@@ -16,7 +16,6 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField]
     private InteractableWorldItem _closestInteractable = null;
 
-    // Animator reference for interaction animation
     [SerializeField] private Animator playerAnimator;
     private readonly int _interactTriggerHash = Animator.StringToHash("Interact");
 
@@ -30,27 +29,31 @@ public class PlayerInteraction : MonoBehaviour
         }
         if (playerAnimator == null)
         {
-            // Try to get it from self or children if not assigned
             playerAnimator = GetComponentInChildren<Animator>();
         }
     }
 
     private void OnEnable()
     {
-        _playerControls.Gameplay.Enable();
-        _playerControls.Gameplay.Interact.performed += OnInteractInput;
+        if (_playerControls != null)
+        {
+            _playerControls.Gameplay.Enable();
+            _playerControls.Gameplay.Interact.performed += OnInteractInput;
+        }
     }
 
     private void OnDisable()
     {
-        _playerControls.Gameplay.Interact.performed -= OnInteractInput;
-        _playerControls.Gameplay.Disable();
+        if (_playerControls != null)
+        {
+            _playerControls.Gameplay.Interact.performed -= OnInteractInput;
+            _playerControls.Gameplay.Disable();
+        }
     }
 
     private void Update()
     {
         FindClosestInteractable();
-        // Optionally, highlight _closestInteractable here if it's not null
     }
 
     private void OnInteractInput(InputAction.CallbackContext context)
@@ -60,7 +63,7 @@ public class PlayerInteraction : MonoBehaviour
 
     public void RegisterInteractable(InteractableWorldItem interactable)
     {
-        if (!_nearbyInteractables.Contains(interactable))
+        if (interactable != null && !_nearbyInteractables.Contains(interactable))
         {
             _nearbyInteractables.Add(interactable);
         }
@@ -70,7 +73,9 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (_nearbyInteractables.Contains(interactable))
         {
-            interactable.ShowCue(false); // Ensure cue is hidden if it was the closest
+            if(_closestInteractable == interactable)
+                 interactable.ShowCue(false);
+
             _nearbyInteractables.Remove(interactable);
         }
         if (_closestInteractable == interactable)
@@ -78,19 +83,18 @@ public class PlayerInteraction : MonoBehaviour
             _closestInteractable = null;
         }
     }
-    
+
     private void FindClosestInteractable()
     {
         InteractableWorldItem oldClosest = _closestInteractable;
         _closestInteractable = null;
         float minDistance = float.MaxValue;
 
-        // Cleanup null entries that might occur if items are destroyed externally
         _nearbyInteractables.RemoveAll(item => item == null);
 
         foreach (var interactable in _nearbyInteractables)
         {
-            if (interactable == null) continue; // Should be caught by RemoveAll, but good for safety
+            if (interactable == null) continue;
 
             float distance = Vector3.Distance(transform.position, interactable.transform.position);
             if (distance < minDistance)
@@ -111,70 +115,67 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (_closestInteractable == null || inventoryManager == null)
         {
-            // Try a raycast as a fallback or primary method if desired
-            // PerformRaycastInteraction();
             return;
         }
 
         ItemData itemToPick = _closestInteractable.GetItemData();
+        if (itemToPick == null)
+        {
+             Debug.LogWarning($"Attempted to pick up item on object {_closestInteractable.gameObject.name}, but ItemData is not assigned!");
+             return;
+        }
+
         int quantityToPick = _closestInteractable.GetQuantity();
 
-        if (itemToPick != null)
+        if (inventoryManager.AddItem(itemToPick, quantityToPick))
         {
-            if (inventoryManager.AddItem(itemToPick, quantityToPick))
+            if (playerAnimator != null)
             {
-                if (playerAnimator != null)
-                {
-                    playerAnimator.SetTrigger(_interactTriggerHash);
-                }
-                // Unregister before destroying to avoid issues
-                UnregisterInteractable(_closestInteractable);
-                // _closestInteractable.DestroyItem(); // This will destroy the GameObject
-                _closestInteractable = null; // Clear it immediately
-                Debug.Log($"Picked up {quantityToPick}x {itemToPick.displayName}");
+                playerAnimator.SetTrigger(_interactTriggerHash);
             }
-            else
-            {
-                Debug.LogWarning($"Could not pick up {itemToPick.displayName}. Inventory full or error.");
-            }
+            Debug.Log($"Picked up {quantityToPick}x {itemToPick.displayName} from {_closestInteractable.gameObject.name}");
+
+            // --- CORREÇÃO ---
+            // 1. Obtenha a referência ao GameObject ANTES de anular _closestInteractable
+            GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
+
+            // 2. Anule a referência _closestInteractable (isso acontece na Unregister ou pode ser explícito)
+            // O método UnregisterInteractable já anula _closestInteractable se ele for o item que estamos interagindo
+            UnregisterInteractable(_closestInteractable);
+            // _closestInteractable = null; // Esta linha é redundante se Unregister já faz isso, mas ser explícito não faz mal.
+
+            // 3. Destrua o GameObject usando a referência que guardamos
+            Destroy(itemGameObjectToDestroy);
+            // --- FIM CORREÇÃO ---
+
+
+        }
+        else
+        {
+            Debug.LogWarning($"Could not pick up {itemToPick.displayName}. Inventory full or AddItem failed.");
         }
     }
 
-    // Example Raycast Interaction (alternative or complementary to trigger-based)
     private void PerformRaycastInteraction()
     {
-        // Ensure interactionPoint and Camera.main are set
         if (interactionPoint == null || Camera.main == null) return;
 
-        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2)); // Center of screen
-        // Or, if you prefer using the interactionPoint:
-        // Ray ray = new Ray(interactionPoint.position, interactionPoint.forward);
-        
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+
         if (Physics.Raycast(ray, out RaycastHit hit, interactionRadius))
         {
             InteractableWorldItem interactable = hit.collider.GetComponent<InteractableWorldItem>();
             if (interactable != null)
             {
-                // Logic to highlight or show cue for raycast-detected item
-                // On interact press:
-                // ItemData itemToPick = interactable.GetItemData();
-                // ... rest of pickup logic ...
+
             }
         }
     }
 
-    // Optional: Draw gizmo for interaction radius if not using triggers primarily
     private void OnDrawGizmosSelected()
     {
-        if (interactionPoint != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(interactionPoint.position, interactionRadius);
-        }
-        else
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, interactionRadius);
-        }
+        Gizmos.color = Color.yellow;
+        Vector3 center = interactionPoint != null ? interactionPoint.position : transform.position;
+        Gizmos.DrawWireSphere(center, interactionRadius);
     }
 }
