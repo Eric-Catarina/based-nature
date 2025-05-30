@@ -16,12 +16,12 @@ public class InteractableWorldItem : MonoBehaviour
     private void Awake()
     {
         GetComponent<Collider>().isTrigger = true; // Ensure it's a trigger for detection
-        if(interactionCue) interactionCue.SetActive(false);
+        if (interactionCue) interactionCue.SetActive(false);
     }
 
     public void ShowCue(bool show)
     {
-        if(interactionCue) interactionCue.SetActive(show);
+        if (interactionCue) interactionCue.SetActive(show);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -50,6 +50,13 @@ public class InteractableWorldItem : MonoBehaviour
             }
             _playerInRange = false;
         }
+    }
+    
+    public void DestroyItem()
+    {
+        // Optionally handle item destruction logic here
+        // For example, play a sound or animation before destroying
+        Destroy(gameObject);
     }
 
     // Optional: Add highlight effect on mouse hover or when in range

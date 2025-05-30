@@ -12,6 +12,8 @@ public class PlayerInteraction : MonoBehaviour
 
     private PlayerControls _playerControls;
     private List<InteractableWorldItem> _nearbyInteractables = new List<InteractableWorldItem>();
+
+    [SerializeField]
     private InteractableWorldItem _closestInteractable = null;
 
     // Animator reference for interaction animation
@@ -127,7 +129,7 @@ public class PlayerInteraction : MonoBehaviour
                 }
                 // Unregister before destroying to avoid issues
                 UnregisterInteractable(_closestInteractable);
-                Destroy(_closestInteractable.gameObject);
+                // _closestInteractable.DestroyItem(); // This will destroy the GameObject
                 _closestInteractable = null; // Clear it immediately
                 Debug.Log($"Picked up {quantityToPick}x {itemToPick.displayName}");
             }
