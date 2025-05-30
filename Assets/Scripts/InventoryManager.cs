@@ -188,6 +188,7 @@ public class InventoryManager : MonoBehaviour
             if (itemToUse.itemType == ItemType.Consumable)
             {
                 Debug.Log($"{itemToUse.itemName} consumed. (Effect logic to be implemented)");
+                AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound);
                 RemoveItemFromSlot(slotIndex, 1);
             }
             // Add other use cases, e.g., equipping
