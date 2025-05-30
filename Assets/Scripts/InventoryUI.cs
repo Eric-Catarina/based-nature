@@ -3,35 +3,38 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
-using TMPro; // For Tooltip
+using TMPro;
 
 public class InventoryUI : MonoBehaviour
 {
     [Header("Core References")]
     [SerializeField] private InventoryManager inventoryManager;
-    [SerializeField] private GameObject inventoryPanel; // The root panel of the inventory UI
-    [SerializeField] private Transform slotContainer; // Parent object with GridLayoutGroup for slots
+    [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private Transform slotContainer;
     [SerializeField] private InventorySlotUI slotPrefab;
 
     [Header("Tooltip References")]
     [SerializeField] private GameObject tooltipPanel;
     [SerializeField] private TextMeshProUGUI tooltipItemNameText;
     [SerializeField] private TextMeshProUGUI tooltipItemDescriptionText;
-    [SerializeField] private TextMeshProUGUI tooltipItemTypeText; // Optional
+    [SerializeField] private TextMeshProUGUI tooltipItemTypeText;
 
     [Header("Drag & Drop Visuals")]
-    [SerializeField] public Image draggedItemImage; // A separate image on canvas for drag visual
+    [SerializeField] public Image draggedItemImage;
 
     private List<InventorySlotUI> _slotUIInstances = new List<InventorySlotUI>();
-    private PlayerControls _playerControls;
+    private PlayerControls _playerControls; // Certifique-se que PlayerControls.cs existe e está configurado
     private bool _isPanelOpen = false;
 
     private int _draggedFromSlotIndex = -1;
 
-
     private void Awake()
     {
-        _playerControls = new PlayerControls();
+        if (Application.isPlaying) // PlayerControls pode dar erro no editor se não estiver em play mode
+        {
+            _playerControls = new PlayerControls();
+        }
+
         if (inventoryManager == null) Debug.LogError("InventoryManager not assigned to InventoryUI.");
         if (inventoryPanel == null) Debug.LogError("InventoryPanel not assigned to InventoryUI.");
         if (slotContainer == null) Debug.LogError("SlotContainer not assigned to InventoryUI.");
@@ -39,7 +42,7 @@ public class InventoryUI : MonoBehaviour
 
         if (draggedItemImage) draggedItemImage.gameObject.SetActive(false);
         if (tooltipPanel) tooltipPanel.SetActive(false);
-        ClosePanel(); // Start closed
+        ClosePanel();
     }
 
     private void OnEnable()
@@ -47,10 +50,13 @@ public class InventoryUI : MonoBehaviour
         if (inventoryManager != null)
         {
             inventoryManager.OnInventorySlotChanged += UpdateSpecificSlotUI;
-            inventoryManager.OnInventoryChanged += RefreshAllSlotsUI; // For full redraws
+            inventoryManager.OnInventoryChanged += RefreshAllSlotsUI;
         }
-        _playerControls.Gameplay.Enable(); // Assuming inventory is part of Gameplay map
-        _playerControls.Gameplay.OpenInventory.performed += TogglePanelInput;
+        if (_playerControls != null)
+        {
+            _playerControls.Gameplay.Enable();
+            _playerControls.Gameplay.OpenInventory.performed += TogglePanelInput;
+        }
     }
 
     private void OnDisable()
@@ -60,25 +66,24 @@ public class InventoryUI : MonoBehaviour
             inventoryManager.OnInventorySlotChanged -= UpdateSpecificSlotUI;
             inventoryManager.OnInventoryChanged -= RefreshAllSlotsUI;
         }
-        _playerControls.Gameplay.OpenInventory.performed -= TogglePanelInput;
-        _playerControls.Gameplay.Disable();
+         if (_playerControls != null)
+        {
+            _playerControls.Gameplay.OpenInventory.performed -= TogglePanelInput;
+            _playerControls.Gameplay.Disable();
+        }
     }
 
     private void Start()
     {
         CreateSlotUIInstances();
-        RefreshAllSlotsUI(); // Initial draw
+        RefreshAllSlotsUI();
     }
     
-    // Inside InventoryUI.cs
     private void Update()
     {
-        // Verifica se há um item sendo arrastado (usamos -1 como índice inválido)
-        // e se a imagem visual do item arrastado existe e está ativa
         if (_draggedFromSlotIndex != -1 && draggedItemImage != null && draggedItemImage.gameObject.activeSelf)
         {
-            // Move a imagem arrastada para a posição atual do mouse
-            draggedItemImage.transform.position = Mouse.current.position.ReadValue();
+            // A posição é atualizada pelo OnDrag do InventorySlotUI
         }
     }
 
@@ -92,21 +97,25 @@ public class InventoryUI : MonoBehaviour
     {
         inventoryPanel.SetActive(true);
         _isPanelOpen = true;
-        Time.timeScale = 0f; // Pause game
+        Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        // Potentially switch Input Action Map to a "UI" map
     }
 
     public void ClosePanel()
     {
         inventoryPanel.SetActive(false);
         _isPanelOpen = false;
-        HideTooltip(); // Ensure tooltip is hidden when panel closes
-        Time.timeScale = 1f; // Resume game
+        HideTooltip();
+        if (draggedItemImage && draggedItemImage.gameObject.activeSelf) // Cancel drag if panel closes
+        {
+            draggedItemImage.gameObject.SetActive(false);
+            if(_draggedFromSlotIndex != -1) UpdateSpecificSlotUI(_draggedFromSlotIndex); // Restore visual of dragged slot
+            _draggedFromSlotIndex = -1;
+        }
+        Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        // Switch back to "Gameplay" Input Action Map
     }
 
     private void CreateSlotUIInstances()
@@ -125,25 +134,28 @@ public class InventoryUI : MonoBehaviour
     private void UpdateSpecificSlotUI(int slotIndex)
     {
         if (inventoryManager == null || slotIndex < 0 || slotIndex >= _slotUIInstances.Count) return;
-        _slotUIInstances[slotIndex].UpdateSlotDisplay(inventoryManager.GetSlotAtIndex(slotIndex));
+        
+        InventorySlotData slotData = inventoryManager.GetSlotAtIndex(slotIndex);
+        _slotUIInstances[slotIndex].UpdateSlotDisplay(slotData);
     }
 
     private void RefreshAllSlotsUI()
     {
-        if (inventoryManager == null || _slotUIInstances.Count != inventoryManager.InventorySize)
+        if (inventoryManager == null) return;
+        
+        if (_slotUIInstances.Count != inventoryManager.InventorySize)
         {
-            // This might happen if inventory size changes dynamically, though not planned for this setup
-            // Re-create slots if counts don't match (more robust)
-             foreach(var slot in _slotUIInstances) if(slot != null) Destroy(slot.gameObject);
+            foreach(var slot in _slotUIInstances) { if(slot != null) Destroy(slot.gameObject); }
             _slotUIInstances.Clear();
-            CreateSlotUIInstances(); // This will create the correct number
+            CreateSlotUIInstances();
         }
 
         for (int i = 0; i < inventoryManager.InventorySize; i++)
         {
-            if (i < _slotUIInstances.Count) // Check to prevent out of bounds if lists somehow mismatch
+            if (i < _slotUIInstances.Count)
             {
-                _slotUIInstances[i].UpdateSlotDisplay(inventoryManager.GetSlotAtIndex(i));
+                 InventorySlotData slotData = inventoryManager.GetSlotAtIndex(i);
+                _slotUIInstances[i].UpdateSlotDisplay(slotData);
             }
         }
     }
@@ -152,7 +164,7 @@ public class InventoryUI : MonoBehaviour
     {
         if (tooltipPanel == null || item == null) return;
 
-        tooltipItemNameText.text = item.displayName;
+        tooltipItemNameText.text = item.itemName;
         tooltipItemDescriptionText.text = item.description;
         if (tooltipItemTypeText)
         {
@@ -164,31 +176,41 @@ public class InventoryUI : MonoBehaviour
         }
         
         tooltipPanel.SetActive(true);
+        
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipPanel.GetComponent<RectTransform>());
 
-        // Position tooltip (simple example: to the right of the slot)
-        // More complex positioning might be needed to keep it on screen
-        Canvas canvas = GetComponentInParent<Canvas>();
-        Vector3 slotWorldPos = slotRectTransform.TransformPoint(slotRectTransform.rect.center);
-        Vector2 slotScreenPos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvas.transform as RectTransform, 
-            slotWorldPos, 
-            canvas.worldCamera, 
-            out slotScreenPos
-        );
 
-        // Crude positioning logic, adjust as needed
         RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
-        tooltipRect.anchoredPosition = slotRectTransform.anchoredPosition + new Vector2(slotRectTransform.sizeDelta.x * 0.75f, -slotRectTransform.sizeDelta.y * 0.5f);
+        Vector3 slotGlobalPosition;
+        
+        Vector3[] slotCorners = new Vector3[4];
+        slotRectTransform.GetWorldCorners(slotCorners); // slotCorners[2] is top-right
+        slotGlobalPosition = slotCorners[2]; 
 
-        // Ensure it fits on screen (basic implementation)
+        Canvas canvas = GetComponentInParent<Canvas>();
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, slotGlobalPosition, canvas.worldCamera, out localPoint);
+        
+        tooltipRect.anchoredPosition = localPoint + new Vector2(tooltipRect.sizeDelta.x * tooltipRect.pivot.x + 5, -tooltipRect.sizeDelta.y * (1-tooltipRect.pivot.y) - 5) ;
+
+
+        Vector2 canvasSize = (canvas.transform as RectTransform).sizeDelta;
+        Vector2 anchoredPos = tooltipRect.anchoredPosition;
         Vector2 tooltipSize = tooltipRect.sizeDelta;
-        Vector2 screenRes = new Vector2(Screen.width / canvas.scaleFactor, Screen.height / canvas.scaleFactor); // Adjust for canvas scaler
 
-        if (tooltipRect.anchoredPosition.x + tooltipSize.x > screenRes.x / 2)
-            tooltipRect.anchoredPosition = new Vector2(slotRectTransform.anchoredPosition.x - tooltipSize.x - (slotRectTransform.sizeDelta.x * 0.25f) , tooltipRect.anchoredPosition.y);
-        if (tooltipRect.anchoredPosition.y - tooltipSize.y < -screenRes.y / 2)
-             tooltipRect.anchoredPosition = new Vector2(tooltipRect.anchoredPosition.x, slotRectTransform.anchoredPosition.y + tooltipSize.y + (slotRectTransform.sizeDelta.y * 0.5f));
+        if (anchoredPos.x + tooltipSize.x * (1 - tooltipRect.pivot.x) > canvasSize.x / 2)
+        {
+            slotGlobalPosition = slotCorners[3]; // top-left
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, slotGlobalPosition, canvas.worldCamera, out localPoint);
+            anchoredPos.x = localPoint.x - tooltipSize.x * tooltipRect.pivot.x - 5;
+        }
+        if (anchoredPos.y - tooltipSize.y * tooltipRect.pivot.y < -canvasSize.y / 2)
+        {
+            slotGlobalPosition = slotCorners[0]; // bottom-right (if changing vertical anchor)
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, slotGlobalPosition, canvas.worldCamera, out localPoint);
+            anchoredPos.y = localPoint.y + tooltipSize.y * (1-tooltipRect.pivot.y) + 5 + slotRectTransform.sizeDelta.y; // Adjust to be above slot
+        }
+        tooltipRect.anchoredPosition = anchoredPos;
     }
 
     public void HideTooltip()
@@ -204,55 +226,55 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
-    // --- Drag and Drop Logic ---
     public void OnDragStarted(int fromSlotIndex)
     {
-        Debug.Log($"Drag started from slot index: {fromSlotIndex}");
         _draggedFromSlotIndex = fromSlotIndex;
         if (draggedItemImage != null)
         {
             InventorySlotData slotData = inventoryManager.GetSlotAtIndex(fromSlotIndex);
-            if (slotData != null && slotData.itemData != null)
+            if (slotData != null && !slotData.IsEmpty())
             {
                 draggedItemImage.sprite = slotData.itemData.icon;
                 draggedItemImage.gameObject.SetActive(true);
+            }
+            else
+            {
+                 draggedItemImage.gameObject.SetActive(false);
+                 _draggedFromSlotIndex = -1; 
             }
         }
     }
 
     public void OnDragEnded(int originalFromSlotIndex, GameObject dropTargetObject)
     {
+        int fromIndex = _draggedFromSlotIndex != -1 ? _draggedFromSlotIndex : originalFromSlotIndex;
+        _draggedFromSlotIndex = -1; 
+
         if (draggedItemImage != null)
         {
             draggedItemImage.gameObject.SetActive(false);
         }
 
-        int fromIndex = _draggedFromSlotIndex != -1 ? _draggedFromSlotIndex : originalFromSlotIndex; // Use the stored one if valid
-         _draggedFromSlotIndex = -1; // Reset for next drag
+        if (fromIndex == -1) return; // Drag was not properly started or was cancelled
 
         if (dropTargetObject != null)
         {
-            InventorySlotUI targetSlotUI = dropTargetObject.GetComponentInParent<InventorySlotUI>(); // GetComponentInParent because raycast might hit child Image/Text
+            InventorySlotUI targetSlotUI = dropTargetObject.GetComponentInParent<InventorySlotUI>();
             if (targetSlotUI != null)
             {
                 int toIndex = _slotUIInstances.IndexOf(targetSlotUI);
-                if (toIndex != -1 && fromIndex != toIndex) // Ensure it's a valid, different slot
+                if (toIndex != -1 && fromIndex != toIndex)
                 {
                     inventoryManager.MoveItem(fromIndex, toIndex);
                 }
                 else
                 {
-                    // Dropped on itself or invalid target, refresh original slot display
-                     UpdateSpecificSlotUI(fromIndex);
+                    UpdateSpecificSlotUI(fromIndex);
                 }
-                return; // Handled drop on a slot
+                return;
             }
         }
         
-        // If dropped outside a valid slot (e.g., on the panel background or outside inventory)
-        // Or if dropTargetObject is null (dropped outside UI)
-        // For now, just return item to original slot visually (logic for dropping items in world would go here)
-        Debug.Log("Item dropped outside a valid slot.");
-        UpdateSpecificSlotUI(fromIndex); // Refresh the original slot as nothing changed
+        UpdateSpecificSlotUI(fromIndex);
     }
 }

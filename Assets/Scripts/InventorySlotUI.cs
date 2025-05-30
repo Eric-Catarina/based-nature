@@ -4,143 +4,122 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler,
-                                         IBeginDragHandler, IDragHandler, IEndDragHandler,
-                                         IPointerClickHandler
+public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerClickHandler
 {
-    [Header("References")]
     [SerializeField] private Image itemIconImage;
     [SerializeField] private TextMeshProUGUI quantityText;
-    [SerializeField] private GameObject selectionHighlight;
+    [SerializeField] private GameObject quantityBackground;
 
-    private InventorySlotData _slotData;
+    private InventoryUI _inventoryUIController;
     private int _slotIndex;
-    private InventoryUI _inventoryUI;
+    private InventorySlotData _currentSlotData;
 
-
-    public void Initialize(InventoryUI inventoryUI, int slotIndex)
+    public void Initialize(InventoryUI inventoryUI, int index)
     {
-        _inventoryUI = inventoryUI;
-        _slotIndex = slotIndex;
-        if (itemIconImage) itemIconImage.preserveAspect = true;
-        ClearSlotDisplay();
+        _inventoryUIController = inventoryUI;
+        _slotIndex = index;
+        if (itemIconImage) itemIconImage.enabled = false;
+        if (quantityText) quantityText.enabled = false;
+        if (quantityBackground) quantityBackground.SetActive(false);
     }
 
     public void UpdateSlotDisplay(InventorySlotData slotData)
     {
-        _slotData = slotData;
-        if (itemIconImage == null || quantityText == null) return;
-
-        if(selectionHighlight) selectionHighlight.SetActive(false); // Hide highlight when updating
-
-        if (_slotData != null && _slotData.itemData != null)
+        _currentSlotData = slotData;
+        if (slotData != null && !slotData.IsEmpty())
         {
-            itemIconImage.sprite = _slotData.itemData.icon;
-            itemIconImage.enabled = true;
-            quantityText.text = _slotData.quantity >= 1 ? _slotData.quantity.ToString() : "";
-            quantityText.enabled = _slotData.quantity >= 1;
+            if (itemIconImage)
+            {
+                itemIconImage.sprite = slotData.itemData.icon;
+                itemIconImage.enabled = true;
+            }
+            if (quantityText)
+            {
+                bool showQuantity = slotData.quantity > 1 && slotData.itemData.isStackable;
+                quantityText.text = showQuantity ? slotData.quantity.ToString() : "";
+                quantityText.enabled = showQuantity;
+                if (quantityBackground) quantityBackground.SetActive(showQuantity);
+            }
         }
         else
         {
-            ClearSlotDisplay();
-        }
-    }
-
-    public void ClearSlotDisplay()
-    {
-        if (itemIconImage)
-        {
-            itemIconImage.sprite = null;
-            itemIconImage.enabled = false;
-        }
-        if (quantityText)
-        {
-            quantityText.text = "";
-            quantityText.enabled = false;
-        }
-        _slotData = null;
-        if(selectionHighlight) selectionHighlight.SetActive(false); // Hide highlight when clearing
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        if (_inventoryUI != null && _slotData != null && _slotData.itemData != null)
-        {
-            _inventoryUI.ShowTooltip(_slotData.itemData, GetComponent<RectTransform>());
-        }
-        if (selectionHighlight) selectionHighlight.SetActive(true);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        if (_inventoryUI != null)
-        {
-            _inventoryUI.HideTooltip();
-        }
-        if (selectionHighlight) selectionHighlight.SetActive(false);
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        // Debug.Log($"Slot {_slotIndex} clicked with button {eventData.button}");
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            if (_inventoryUI != null && _slotData != null && _slotData.itemData != null)
+            if (itemIconImage)
             {
-                _inventoryUI.RequestUseItem(_slotIndex);
-                // Tooltip will be hidden by InventoryUI.RequestUseItem -> HideTooltip
+                itemIconImage.sprite = null;
+                itemIconImage.enabled = false;
+            }
+            if (quantityText)
+            {
+                quantityText.text = "";
+                quantityText.enabled = false;
+                if (quantityBackground) quantityBackground.SetActive(false);
             }
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_inventoryUIController != null && _currentSlotData != null && !_currentSlotData.IsEmpty())
+        {
+            _inventoryUIController.ShowTooltip(_currentSlotData.itemData, GetComponent<RectTransform>());
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (_inventoryUIController != null)
+        {
+            _inventoryUIController.HideTooltip();
+        }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            if (_inventoryUIController != null && _currentSlotData != null && !_currentSlotData.IsEmpty())
+            {
+                 _inventoryUIController.RequestUseItem(_slotIndex);
+            }
+        }
+    }
+    
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // Debug.Log($"Begin drag on slot {_slotIndex} with button {eventData.button}");
-        if (_slotData == null || _slotData.itemData == null || _inventoryUI == null) return;
-        if (eventData.button != PointerEventData.InputButton.Left) return;
-
-        // Use the central draggedItemImage from InventoryUI for visual feedback
-        if (_inventoryUI.draggedItemImage != null)
+        if (_currentSlotData == null || _currentSlotData.IsEmpty() || _inventoryUIController == null)
         {
-             _inventoryUI.draggedItemImage.sprite = itemIconImage.sprite;
-             _inventoryUI.draggedItemImage.gameObject.SetActive(true);
-             _inventoryUI.draggedItemImage.raycastTarget = false; // Ensure it doesn't block raycasts
+            eventData.pointerDrag = null; 
+            return;
         }
-
-        // Hide the original icon and quantity text while dragging
-        itemIconImage.enabled = false;
-        quantityText.enabled = false;
-
-        _inventoryUI.OnDragStarted(_slotIndex);
-        _inventoryUI.HideTooltip(); // Hide tooltip when dragging starts
+        
+        _inventoryUIController.OnDragStarted(_slotIndex);
+        if (itemIconImage) itemIconImage.color = new Color(1,1,1, 0.5f); 
+        if (quantityText) quantityText.enabled = false;
+        if (quantityBackground) quantityBackground.SetActive(false);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        // The visual drag is handled by InventoryUI.Update()
-        // This method in InventorySlotUI is not strictly needed if only the visual is updated externally
-        // Debug.Log($"OnDrag on slot {_slotIndex} (original icon hidden)");
+        if (_inventoryUIController != null && _inventoryUIController.draggedItemImage.gameObject.activeSelf)
+        {
+             _inventoryUIController.draggedItemImage.transform.position = eventData.position;
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        // Debug.Log($"End drag on slot {_slotIndex}");
-        if (eventData.button != PointerEventData.InputButton.Left) return;
+        if (itemIconImage) itemIconImage.color = Color.white;
 
-        // Hide the central draggedItemImage is handled by InventoryUI.OnDragEnded
-
-        // Restore original icon visibility.
-        // The UpdateSlotDisplay will be called by InventoryUI.OnDragEnded (via InventoryManager events)
-        // to set the final state based on where the item ended up.
-        itemIconImage.enabled = true;
-        quantityText.enabled = _slotData != null && _slotData.itemData != null && _slotData.quantity >= 1;
-
-        if (_inventoryUI != null)
+        if (_inventoryUIController != null)
         {
-            _inventoryUI.OnDragEnded(_slotIndex, eventData.pointerCurrentRaycast.gameObject);
+             _inventoryUIController.OnDragEnded(_slotIndex, eventData.pointerCurrentRaycast.gameObject);
         }
-
-        // Re-evaluate selection highlight state after drop
-         if (selectionHighlight) selectionHighlight.SetActive(eventData.pointerCurrentRaycast.gameObject == gameObject || eventData.pointerCurrentRaycast.gameObject.transform.IsChildOf(transform));
+        UpdateSlotDisplay(_currentSlotData); // Ensure the original slot visuals are restored or updated
+    }
+    
+    public void OnDrop(PointerEventData eventData)
+    {
+        // The drop logic is handled by OnEndDrag of the item being dragged,
+        // using eventData.pointerCurrentRaycast.gameObject to determine the drop target.
     }
 }

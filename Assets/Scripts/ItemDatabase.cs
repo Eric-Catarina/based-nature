@@ -1,39 +1,37 @@
-// Path: Assets/_ProjectName/Scripts/Items/ItemDatabase.cs
+// Path: Assets/_ProjectName/Scripts/Inventory/ItemDatabase.cs
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 [CreateAssetMenu(fileName = "ItemDatabase", menuName = "Inventory/Item Database")]
 public class ItemDatabase : ScriptableObject
 {
-    public List<ItemData> allItems;
-
-    public Dictionary<string, ItemData> _itemDictionary;
-
-    public void OnEnable() // Called when the ScriptableObject is loaded
-    {
-        InitializeDatabase();
-    }
-
-    public void OnValidate() // Called in the editor when the script is loaded or a value is changed in the Inspector.
-    {
-        // This helps ensure the dictionary is updated if items are changed in the editor list
-        // Can be heavy if list is huge, use with caution or provide a manual "Rebuild Database" button
-        // InitializeDatabase(); // Commented out for performance, consider a button
-    }
+    [SerializeField] private List<ItemData> allGameItems;
     
-    [ContextMenu("Rebuild Database Dictionary")]
+    public Dictionary<string, ItemData> _itemDictionary { get; private set; }
+    private bool _isInitialized = false;
+
     public void InitializeDatabase()
     {
-        _itemDictionary = new Dictionary<string, ItemData>();
-        if (allItems == null) allItems = new List<ItemData>();
+        if (_isInitialized && _itemDictionary != null) return;
 
-        foreach (var item in allItems)
+        _itemDictionary = new Dictionary<string, ItemData>();
+        if (allGameItems == null) allGameItems = new List<ItemData>();
+
+        foreach (var item in allGameItems)
         {
-            if (item == null) continue;
+            if (item == null)
+            {
+                Debug.LogWarning("[ItemDatabase] Found a null ItemData in the allGameItems list.");
+                continue;
+            }
             if (string.IsNullOrEmpty(item.id))
             {
-                Debug.LogError($"Item {item.name} has no ID and cannot be added to the database.");
+                Debug.LogError($"[ItemDatabase] Item '{item.name}' has a null or empty ID. It cannot be added to the database.");
                 continue;
             }
             if (!_itemDictionary.ContainsKey(item.id))
@@ -42,21 +40,39 @@ public class ItemDatabase : ScriptableObject
             }
             else
             {
-                Debug.LogWarning($"Duplicate Item ID '{item.id}' found for item '{item.name}'. Original: '{_itemDictionary[item.id].name}'. Skipping duplicate.");
+                Debug.LogWarning($"[ItemDatabase] Duplicate Item ID '{item.id}' found for item '{item.itemName}'. The item '{_itemDictionary[item.id].itemName}' is already using this ID.");
             }
         }
+        _isInitialized = true;
+    }
+
+    public void RefreshDatabase()
+    {
+        _isInitialized = false;
+        InitializeDatabase();
     }
 
     public ItemData GetItemByID(string id)
     {
-        if (_itemDictionary == null) InitializeDatabase(); // Ensure initialized
+        if (!_isInitialized || _itemDictionary == null) InitializeDatabase();
+        
         _itemDictionary.TryGetValue(id, out ItemData item);
         return item;
     }
 
-    // Optional: Call this if you add/remove items from the `allItems` list at runtime or need to force a refresh
-    public void RefreshDatabase()
+    #if UNITY_EDITOR
+    [ContextMenu("Populate Database From Project Assets")]
+    private void EditorPopulateDatabase()
     {
-        InitializeDatabase();
+        allGameItems = AssetDatabase.FindAssets($"t:{nameof(ItemData)}")
+            .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+            .Select(path => AssetDatabase.LoadAssetAtPath<ItemData>(path))
+            .Where(item => item != null)
+            .ToList();
+        
+        InitializeDatabase(); // Re-initialize after populating
+        EditorUtility.SetDirty(this);
+        Debug.Log($"[ItemDatabase] Populated with {allGameItems.Count} items from project. Dictionary has {_itemDictionary.Count} entries.");
     }
+    #endif
 }

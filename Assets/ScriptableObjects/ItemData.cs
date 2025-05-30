@@ -1,55 +1,55 @@
-// Path: Assets/_ProjectName/Scripts/Items/ItemData.cs
+// Path: Assets/_ProjectName/Scripts/Inventory/ItemData.cs
 using UnityEngine;
 
-public enum ItemType
-{
-    Generic,
-    Consumable,
-    Equipment
-}
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
-public enum EquipmentSlotType
-{
-    None,
-    Weapon,
-    ArmorHead,
-    ArmorChest,
-    ArmorLegs
-}
+public enum ItemType { Generic, Consumable, Equipment, QuestItem }
+public enum EquipmentSlotType { None, Weapon, Armor, Accessory }
 
 [CreateAssetMenu(fileName = "NewItemData", menuName = "Inventory/Item Data")]
 public class ItemData : ScriptableObject
 {
-    [Header("Info")]
-    public string id = System.Guid.NewGuid().ToString(); // Unique ID
-    public string displayName;
+    [Header("Core Identification")]
+    public string id;
+    public string itemName;
     [TextArea] public string description;
     public Sprite icon;
-    public GameObject worldPrefab; // Prefab to instantiate in the world
-
-    [Header("Stats")]
     public ItemType itemType = ItemType.Generic;
-    public int maxStackSize = 1;
-    public bool isStackable { get { return maxStackSize > 1; } }
 
-    [Header("Equipment Info (If Applicable)")]
+    [Header("Stacking & Quantity")]
+    public bool isStackable = true;
+    public int maxStackSize = 99;
+
+    [Header("Functional Properties")]
+    public bool isUsable = false;
+    public bool isEquippable = false;
     public EquipmentSlotType equipmentSlotType = EquipmentSlotType.None;
-    // Add other equipment-specific stats here, e.g., attackPower, defenseValue
+    
+    // public GameObject itemPrefab; // Se o item pode ser dropado no mundo
 
-    [Header("Consumable Info (If Applicable)")]
-    public int healthRestoreAmount;
-    // Add other consumable effects here
-
-    public virtual void UseItem(PlayerStats playerStats)
+    #if UNITY_EDITOR
+    private void OnValidate()
     {
-        Debug.Log($"Using {displayName}");
-        if (itemType == ItemType.Consumable)
+        if (string.IsNullOrEmpty(itemName))
         {
-            if (playerStats != null && healthRestoreAmount > 0)
-            {
-                // playerStats.RestoreHealth(healthRestoreAmount); // Example
-                Debug.Log($"{displayName} restored {healthRestoreAmount} health.");
-            }
+            itemName = name;
+        }
+
+        if (string.IsNullOrEmpty(id))
+        {
+            id = GUID.Generate().ToString();
+            EditorUtility.SetDirty(this);
         }
     }
+
+    [ContextMenu("Force Regenerate ID")]
+    private void RegenerateId()
+    {
+        id = GUID.Generate().ToString();
+        EditorUtility.SetDirty(this);
+        Debug.Log($"Regenerated ID for {name}: {id}");
+    }
+    #endif
 }

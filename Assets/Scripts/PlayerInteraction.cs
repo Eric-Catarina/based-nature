@@ -133,7 +133,7 @@ public class PlayerInteraction : MonoBehaviour
             {
                 playerAnimator.SetTrigger(_interactTriggerHash);
             }
-            Debug.Log($"Picked up {quantityToPick}x {itemToPick.displayName} from {_closestInteractable.gameObject.name}");
+            Debug.Log($"Picked up {quantityToPick}x {itemToPick.name} from {_closestInteractable.gameObject.name}");
 
             // --- CORREÇÃO ---
             // 1. Obtenha a referência ao GameObject ANTES de anular _closestInteractable
@@ -152,7 +152,7 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"Could not pick up {itemToPick.displayName}. Inventory full or AddItem failed.");
+            Debug.LogWarning($"Could not pick up {itemToPick.name}. Inventory full or AddItem failed.");
         }
     }
 

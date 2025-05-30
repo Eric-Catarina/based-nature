@@ -1,16 +1,14 @@
 // Path: Assets/_ProjectName/Scripts/Inventory/InventorySlotData.cs
-using System;
-
-[Serializable]
+[System.Serializable]
 public class InventorySlotData
 {
     public ItemData itemData;
     public int quantity;
 
-    public InventorySlotData(ItemData item, int amount)
+    public InventorySlotData(ItemData item = null, int qty = 0)
     {
         itemData = item;
-        quantity = amount;
+        quantity = qty;
     }
 
     public void Clear()
@@ -19,17 +17,18 @@ public class InventorySlotData
         quantity = 0;
     }
 
+    public bool IsEmpty()
+    {
+        return itemData == null || quantity <= 0;
+    }
+
     public void AddQuantity(int amount)
     {
         quantity += amount;
     }
 
-    public void RemoveQuantity(int amount)
+    public void SetQuantity(int amount)
     {
-        quantity -= amount;
-        if (quantity <= 0)
-        {
-            Clear();
-        }
+        quantity = amount;
     }
 }

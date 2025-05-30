@@ -1,57 +1,43 @@
 // Path: Assets/_ProjectName/Scripts/Inventory/InventoryManager.cs
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
 public class InventoryManager : MonoBehaviour
 {
-    [Header("Settings")]
+    public static InventoryManager Instance { get; private set; }
+
     [SerializeField] private int inventorySize = 20;
-    // [SerializeField] private int equipmentSlotsSize = 4; // Example for dedicated equipment slots
+    public int InventorySize => inventorySize;
 
     private List<InventorySlotData> _inventorySlots = new List<InventorySlotData>();
-    // private List<InventorySlotData> _equipmentSlots = new List<InventorySlotData>(); // Example
 
-    public event Action<int> OnInventorySlotChanged; // For specific slot updates
-    public event Action OnInventoryChanged; // For general updates (e.g., after sorting or full refresh)
-
-    public int InventorySize => inventorySize;
-    // public int EquipmentSlotsSize => equipmentSlotsSize;
+    public event Action<int> OnInventorySlotChanged;
+    public event Action OnInventoryChanged;
 
     private void Awake()
     {
-        InitializeInventory();
-        // InitializeEquipmentSlots();
-        // LoadInventory(); // We'll add this later
-    }
-
-    private void Start()
-    {
-        // Notify UI to draw initial state
-        OnInventoryChanged?.Invoke();
-        for(int i = 0; i < _inventorySlots.Count; i++)
+        if (Instance != null && Instance != this)
         {
-            OnInventorySlotChanged?.Invoke(i);
+            Destroy(gameObject);
+            return;
         }
+        Instance = this;
+        InitializeInventory();
     }
-
 
     private void InitializeInventory()
     {
         _inventorySlots = new List<InventorySlotData>(inventorySize);
         for (int i = 0; i < inventorySize; i++)
         {
-            _inventorySlots.Add(new InventorySlotData(null, 0));
+            _inventorySlots.Add(new InventorySlotData());
         }
     }
 
     public InventorySlotData GetSlotAtIndex(int index)
     {
-        if (index < 0 || index >= _inventorySlots.Count)
-        {
-            return null;
-        }
+        if (index < 0 || index >= _inventorySlots.Count) return null;
         return _inventorySlots[index];
     }
 
@@ -59,68 +45,85 @@ public class InventoryManager : MonoBehaviour
     {
         if (item == null || quantity <= 0) return false;
 
-        // Try to stack with existing items first
+        bool itemAdded = false;
+
         if (item.isStackable)
         {
             for (int i = 0; i < _inventorySlots.Count; i++)
             {
-                InventorySlotData slot = _inventorySlots[i];
-                if (slot.itemData == item && slot.quantity < item.maxStackSize)
+                if (!_inventorySlots[i].IsEmpty() && _inventorySlots[i].itemData == item)
                 {
-                    int amountCanAdd = item.maxStackSize - slot.quantity;
-                    int amountToAdd = Mathf.Min(quantity, amountCanAdd);
-                    
-                    slot.AddQuantity(amountToAdd);
-                    quantity -= amountToAdd;
-                    OnInventorySlotChanged?.Invoke(i);
-
-                    if (quantity <= 0) return true;
-                }
-            }
-        }
-
-        // Try to add to an empty slot
-        for (int i = 0; i < _inventorySlots.Count; i++)
-        {
-            InventorySlotData slot = _inventorySlots[i];
-            if (slot.itemData == null)
-            {
-                int amountToAdd = item.isStackable ? Mathf.Min(quantity, item.maxStackSize) : 1;
-                
-                slot.itemData = item;
-                slot.AddQuantity(amountToAdd); // AddQuantity will cap if it's a new item
-                quantity -= amountToAdd;
-                OnInventorySlotChanged?.Invoke(i);
-
-                if (quantity <= 0) return true;
-
-                // If item is not stackable, and we added one, we are done with this single item.
-                if (!item.isStackable) {
-                    if (quantity > 0) Debug.LogWarning($"Added one non-stackable {item.displayName}, but more quantity ({quantity}) was requested. Adding remaining to new slots if possible.");
-                    // Continue to add remaining quantity to new slots if multiple non-stackable items were requested (e.g. picking up a pile of swords)
-                     if (quantity <= 0) return true; else continue;
+                    int spaceInStack = item.maxStackSize - _inventorySlots[i].quantity;
+                    if (spaceInStack > 0)
+                    {
+                        int amountToAdd = Mathf.Min(quantity, spaceInStack);
+                        _inventorySlots[i].AddQuantity(amountToAdd);
+                        quantity -= amountToAdd;
+                        OnInventorySlotChanged?.Invoke(i);
+                        itemAdded = true;
+                        if (quantity <= 0) break;
+                    }
                 }
             }
         }
 
         if (quantity > 0)
         {
-            Debug.LogWarning($"Inventory full. Could not add {quantity}x {item.displayName}.");
-            return false;
+            for (int i = 0; i < _inventorySlots.Count; i++)
+            {
+                if (_inventorySlots[i].IsEmpty())
+                {
+                    int amountToAdd = item.isStackable ? Mathf.Min(quantity, item.maxStackSize) : 1;
+                    
+                    _inventorySlots[i].itemData = item;
+                    _inventorySlots[i].SetQuantity(amountToAdd);
+                    quantity -= amountToAdd;
+                    OnInventorySlotChanged?.Invoke(i);
+                    itemAdded = true;
+
+                    if (quantity <= 0) break; 
+                    if (!item.isStackable && quantity > 0) continue; 
+                }
+            }
         }
-        return true;
+        
+        if (!itemAdded && quantity > 0)
+        {
+             Debug.LogWarning($"Inventory full. Could not add any of {item.itemName}.");
+             return false;
+        }
+        if (itemAdded && quantity > 0)
+        {
+             Debug.LogWarning($"Inventory partially full. Could not add all {quantity} of {item.itemName}.");
+        }
+
+        if(itemAdded) OnInventoryChanged?.Invoke();
+        return itemAdded;
     }
 
-    public void RemoveItem(int slotIndex, int quantity = 1)
+    public bool RemoveItemFromSlot(int slotIndex, int quantityToRemove = 1)
     {
-        if (slotIndex < 0 || slotIndex >= _inventorySlots.Count) return;
+        if (slotIndex < 0 || slotIndex >= _inventorySlots.Count || _inventorySlots[slotIndex].IsEmpty() || quantityToRemove <= 0)
+        {
+            return false;
+        }
 
         InventorySlotData slot = _inventorySlots[slotIndex];
-        if (slot.itemData != null && quantity > 0)
+        
+        if (slot.quantity < quantityToRemove)
         {
-            slot.RemoveQuantity(quantity);
-            OnInventorySlotChanged?.Invoke(slotIndex);
+            return false; 
         }
+
+        slot.AddQuantity(-quantityToRemove);
+        if (slot.quantity <= 0)
+        {
+            slot.Clear();
+        }
+        
+        OnInventorySlotChanged?.Invoke(slotIndex);
+        OnInventoryChanged?.Invoke();
+        return true;
     }
 
     public void MoveItem(int fromIndex, int toIndex)
@@ -128,152 +131,147 @@ public class InventoryManager : MonoBehaviour
         if (fromIndex < 0 || fromIndex >= _inventorySlots.Count ||
             toIndex < 0 || toIndex >= _inventorySlots.Count ||
             fromIndex == toIndex)
+        {
             return;
+        }
 
         InventorySlotData fromSlot = _inventorySlots[fromIndex];
         InventorySlotData toSlot = _inventorySlots[toIndex];
 
-        if (fromSlot.itemData == null) return; // Moving an empty slot
+        if (fromSlot.IsEmpty()) return;
 
-        // If target slot is empty OR items are the same and stackable
-        if (toSlot.itemData == null || (toSlot.itemData == fromSlot.itemData && toSlot.itemData.isStackable))
+        if (toSlot.IsEmpty())
         {
-            if (toSlot.itemData == null) // Moving to empty slot
-            {
-                toSlot.itemData = fromSlot.itemData;
-                toSlot.quantity = 0; // Ensure it's clean before adding
-            }
+            _inventorySlots[toIndex] = new InventorySlotData(fromSlot.itemData, fromSlot.quantity);
+            _inventorySlots[fromIndex].Clear();
+        }
+        else if (toSlot.itemData == fromSlot.itemData && toSlot.itemData.isStackable)
+        {
+            int spaceInToStack = toSlot.itemData.maxStackSize - toSlot.quantity;
+            int amountToMove = Mathf.Min(fromSlot.quantity, spaceInToStack);
 
-            int spaceInToSlot = toSlot.itemData.maxStackSize - toSlot.quantity;
-            int amountToMove = Mathf.Min(fromSlot.quantity, spaceInToSlot);
-            
-            if (toSlot.itemData == fromSlot.itemData && !toSlot.itemData.isStackable && toSlot.quantity > 0)
-            {
-                // Special case: swapping two non-stackable items of the same type (or any different non-stackable items)
-                 // This path means target slot is NOT empty and they are NOT stackable or NOT same item
-                // So we swap
-                ItemData tempItem = fromSlot.itemData;
-                int tempQuantity = fromSlot.quantity;
-
-                fromSlot.itemData = toSlot.itemData;
-                fromSlot.quantity = toSlot.quantity;
-
-                toSlot.itemData = tempItem;
-                toSlot.quantity = tempQuantity;
-            }
-            else // Stacking or moving to empty
+            if (amountToMove > 0)
             {
                 toSlot.AddQuantity(amountToMove);
-                fromSlot.RemoveQuantity(amountToMove); // This will clear fromSlot if quantity becomes 0
+                fromSlot.AddQuantity(-amountToMove);
+                if (fromSlot.quantity <= 0) fromSlot.Clear();
             }
-
+            else
+            {
+                InventorySlotData temp = new InventorySlotData(fromSlot.itemData, fromSlot.quantity);
+                _inventorySlots[fromIndex] = new InventorySlotData(toSlot.itemData, toSlot.quantity);
+                _inventorySlots[toIndex] = temp;
+            }
         }
-        else // Items are different, or same but not stackable and target is full: Swap them
+        else 
         {
-            ItemData tempItem = fromSlot.itemData;
-            int tempQuantity = fromSlot.quantity;
-
-            fromSlot.itemData = toSlot.itemData;
-            fromSlot.quantity = toSlot.quantity;
-
-            toSlot.itemData = tempItem;
-            toSlot.quantity = tempQuantity;
+            InventorySlotData temp = new InventorySlotData(fromSlot.itemData, fromSlot.quantity);
+            _inventorySlots[fromIndex] = new InventorySlotData(toSlot.itemData, toSlot.quantity);
+            _inventorySlots[toIndex] = temp;
         }
 
         OnInventorySlotChanged?.Invoke(fromIndex);
         OnInventorySlotChanged?.Invoke(toIndex);
+        OnInventoryChanged?.Invoke();
     }
-
+    
     public void UseItem(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= _inventorySlots.Count) return;
+        if (slotIndex < 0 || slotIndex >= _inventorySlots.Count || _inventorySlots[slotIndex].IsEmpty()) return;
 
-        InventorySlotData slot = _inventorySlots[slotIndex];
-        if (slot.itemData != null)
+        ItemData itemToUse = _inventorySlots[slotIndex].itemData;
+        Debug.Log($"Attempting to use {itemToUse.itemName}");
+
+        if (itemToUse.isUsable)
         {
-            // Assuming PlayerStats is accessible, e.g., via a singleton or passed in
-            PlayerStats playerStats = GetComponentInParent<PlayerStats>(); // Example: if InventoryManager is child of Player
-            // Or find it: PlayerStats playerStats = FindObjectOfType<PlayerStats>(); (Not ideal for performance)
-
-            slot.itemData.UseItem(playerStats); // PlayerStats can be null if not implemented
-
-            if (slot.itemData.itemType == ItemType.Consumable || 
-               (slot.itemData.itemType == ItemType.Equipment /*&& autoEquipOnUse?*/ )) // Decide if 'Use' also means 'Equip'
+            if (itemToUse.itemType == ItemType.Consumable)
             {
-                slot.RemoveQuantity(1);
-                OnInventorySlotChanged?.Invoke(slotIndex);
+                Debug.Log($"{itemToUse.itemName} consumed. (Effect logic to be implemented)");
+                RemoveItemFromSlot(slotIndex, 1);
             }
-            // If it's equipment, you might want a separate EquipItem(slotIndex) method
+            // Add other use cases, e.g., equipping
+        }
+        else if (itemToUse.isEquippable)
+        {
+            Debug.Log($"Attempting to equip {itemToUse.itemName}. (Equipment logic to be implemented)");
+            // EquipmentManager.Instance.EquipItem(itemToUse, slotIndex);
+        }
+        else
+        {
+            Debug.Log($"{itemToUse.itemName} is not usable or equippable.");
         }
     }
 
-    // --- Save/Load (Basic Structure) ---
     public List<InventorySlotSaveData> GetSaveData()
     {
-        var saveData = new List<InventorySlotSaveData>();
-        foreach (var slot in _inventorySlots)
+        List<InventorySlotSaveData> saveData = new List<InventorySlotSaveData>();
+        foreach (InventorySlotData slot in _inventorySlots)
         {
-            if (slot.itemData != null)
+            if (!slot.IsEmpty())
             {
                 saveData.Add(new InventorySlotSaveData(slot.itemData.id, slot.quantity));
             }
             else
             {
-                saveData.Add(new InventorySlotSaveData(null, 0)); // Represent empty slot
+                saveData.Add(new InventorySlotSaveData(null, 0));
             }
         }
         return saveData;
     }
 
-    public void LoadSaveData(List<InventorySlotSaveData> saveData, Dictionary<string, ItemData> itemDatabase)
+    public void LoadSaveData(List<InventorySlotSaveData> slotSaveDataList, Dictionary<string, ItemData> itemDatabaseDict)
     {
-        if (saveData == null || itemDatabase == null)
+        if (itemDatabaseDict == null)
         {
-            InitializeInventory(); // Fallback to default empty inventory
+            Debug.LogError("ItemDatabase dictionary is null. Cannot load inventory.");
+            InitializeInventory(); // Reset to empty or default
+            OnInventoryChanged?.Invoke();
             return;
         }
 
-        // Ensure inventorySlots list matches saveData size, or re-initialize
-        if (_inventorySlots.Count != saveData.Count)
+        if (slotSaveDataList == null || slotSaveDataList.Count == 0) // No save data or empty save data
         {
-            _inventorySlots = new List<InventorySlotData>(saveData.Count);
-            for (int i = 0; i < saveData.Count; i++)
+            InitializeInventory(); // Reset to empty or default
+            OnInventoryChanged?.Invoke();
+            return;
+        }
+        
+        if (_inventorySlots.Count != slotSaveDataList.Count && _inventorySlots.Count != inventorySize)
+        {
+             // If inventory size changed or mismatch, reinitialize to correct size first.
+             // This prototype assumes inventorySize is fixed after Awake.
+             // If it can change, you might need to adjust _inventorySlots list size here.
+             InitializeInventory();
+        }
+
+
+        for (int i = 0; i < inventorySize; i++)
+        {
+            if (i < slotSaveDataList.Count)
             {
-                _inventorySlots.Add(new InventorySlotData(null, 0));
+                InventorySlotSaveData savedSlot = slotSaveDataList[i];
+                if (savedSlot != null && !string.IsNullOrEmpty(savedSlot.itemId) && savedSlot.quantity > 0)
+                {
+                    if (itemDatabaseDict.TryGetValue(savedSlot.itemId, out ItemData itemData))
+                    {
+                        _inventorySlots[i] = new InventorySlotData(itemData, savedSlot.quantity);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Item with ID '{savedSlot.itemId}' not found in database. Slot {i} will be empty.");
+                        _inventorySlots[i].Clear();
+                    }
+                }
+                else
+                {
+                    _inventorySlots[i].Clear();
+                }
             }
-            inventorySize = saveData.Count; // Update size if loaded data has different size
-        }
-
-
-        for (int i = 0; i < saveData.Count; i++)
-        {
-            if (i >= _inventorySlots.Count) break; // Should not happen if lists are synced
-
-            _inventorySlots[i].Clear();
-            if (!string.IsNullOrEmpty(saveData[i].itemId) && itemDatabase.TryGetValue(saveData[i].itemId, out ItemData item))
+            else // If save data has fewer slots than current inventory size (e.g. size increased)
             {
-                _inventorySlots[i].itemData = item;
-                _inventorySlots[i].quantity = saveData[i].quantity;
+                 _inventorySlots[i].Clear();
             }
         }
-        OnInventoryChanged?.Invoke(); // Notify UI to refresh all slots
-        for(int i = 0; i < _inventorySlots.Count; i++)
-        {
-            OnInventorySlotChanged?.Invoke(i); // Notify each slot individually as well
-        }
-    }
-}
-
-// Helper struct for saving/loading
-[System.Serializable]
-public struct InventorySlotSaveData
-{
-    public string itemId;
-    public int quantity;
-
-    public InventorySlotSaveData(string id, int qty)
-    {
-        itemId = id;
-        quantity = qty;
+        OnInventoryChanged?.Invoke();
     }
 }
