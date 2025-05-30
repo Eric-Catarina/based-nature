@@ -2,19 +2,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
-using System.Linq;
+using System.Linq; // Importar para usar Linq (RemoveAll)
 
 public class PlayerInteraction : MonoBehaviour
 {
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private Transform interactionPoint;
     [SerializeField] private float interactionRadius = 2f;
+    [SerializeField] private DialogueSystem dialogueSystem;
 
-    private PlayerControls _playerControls;
+    // --- Correção: Declarar ambas as listas aqui ---
+    private List<TalkableNPC> _nearbyTalkables = new List<TalkableNPC>();
     private List<InteractableWorldItem> _nearbyInteractables = new List<InteractableWorldItem>();
+    // --- Fim Correção ---
+    private PlayerControls _playerControls;
 
-    [SerializeField]
-    private InteractableWorldItem _closestInteractable = null;
+    private TalkableNPC _closestTalkable;
+    private InteractableWorldItem _closestInteractable;
 
     [SerializeField] private Animator playerAnimator;
     private readonly int _interactTriggerHash = Animator.StringToHash("Interact");
@@ -26,6 +30,10 @@ public class PlayerInteraction : MonoBehaviour
         if (inventoryManager == null)
         {
             Debug.LogError("InventoryManager not assigned to PlayerInteraction.");
+        }
+        if (dialogueSystem == null)
+        {
+            Debug.LogError("DialogueSystem not assigned to PlayerInteraction.");
         }
         if (playerAnimator == null)
         {
@@ -54,11 +62,35 @@ public class PlayerInteraction : MonoBehaviour
     private void Update()
     {
         FindClosestInteractable();
+        FindClosestTalkable();
     }
 
     private void OnInteractInput(InputAction.CallbackContext context)
     {
-        TryInteract();
+        // Se o diálogo está ativo, este input não faz nada no PlayerInteraction.
+        // O DialogueSystem gerencia o input para avançar o diálogo.
+        if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
+        {
+             // Debug.Log("Dialogue is active, PlayerInteraction ignoring Interact input.");
+             return;
+        }
+
+        // Prioriza interação com NPC se houver um próximo e diálogo não estiver ativo
+        if (_closestTalkable != null)
+        {
+            // Inicia/Avança o diálogo via método do NPC (que chama o DialogueSystem)
+            _closestTalkable.StartOrAdvanceDialogue();
+            // Animação de interação pode ser disparada aqui
+            if (playerAnimator != null) playerAnimator.SetTrigger(_interactTriggerHash);
+        }
+        else if (_closestInteractable != null) // Só interage com item se não houver NPC
+        {
+            TryInteract(); // Lógica para pegar itens
+        }
+        else
+        {
+             // Opcional: Debug.Log("No nearby interactable or talkable object.");
+        }
     }
 
     public void RegisterInteractable(InteractableWorldItem interactable)
@@ -73,11 +105,13 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (_nearbyInteractables.Contains(interactable))
         {
-            if(_closestInteractable == interactable)
-                 interactable.ShowCue(false);
+            // Esconder cue apenas se era o mais próximo
+            if (_closestInteractable == interactable)
+                interactable.ShowCue(false);
 
             _nearbyInteractables.Remove(interactable);
         }
+        // Limpar referência _closestInteractable se for o item que saiu do raio ou foi pego
         if (_closestInteractable == interactable)
         {
             _closestInteractable = null;
@@ -90,7 +124,9 @@ public class PlayerInteraction : MonoBehaviour
         _closestInteractable = null;
         float minDistance = float.MaxValue;
 
+        // --- Correção: Limpeza de itens nulos para a lista correta ---
         _nearbyInteractables.RemoveAll(item => item == null);
+        // --- Fim Correção ---
 
         foreach (var interactable in _nearbyInteractables)
         {
@@ -104,25 +140,81 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
 
+        // Mostrar/Esconder cue apenas se o item mais próximo mudou
         if (oldClosest != _closestInteractable)
         {
-            if(oldClosest != null) oldClosest.ShowCue(false);
-            if(_closestInteractable != null) _closestInteractable.ShowCue(true);
+            if (oldClosest != null) oldClosest.ShowCue(false);
+            if (_closestInteractable != null) _closestInteractable.ShowCue(true);
         }
     }
 
+     public void RegisterTalkable(TalkableNPC talkable)
+    {
+        if (talkable != null && !_nearbyTalkables.Contains(talkable))
+        {
+            _nearbyTalkables.Add(talkable);
+        }
+    }
+
+    public void UnregisterTalkable(TalkableNPC talkable)
+    {
+        if (_nearbyTalkables.Contains(talkable))
+        {
+             // Esconder cue apenas se era o mais próximo
+             if(_closestTalkable == talkable) talkable.ShowInteractionCue(false);
+
+            _nearbyTalkables.Remove(talkable);
+        }
+         // Limpar referência _closestTalkable se for o NPC que saiu do raio
+        if (_closestTalkable == talkable)
+        {
+            _closestTalkable = null;
+        }
+    }
+
+    private void FindClosestTalkable()
+    {
+        TalkableNPC oldClosest = _closestTalkable;
+        _closestTalkable = null;
+        float minDistance = float.MaxValue;
+
+        // --- Correção: Limpeza de NPCs nulos para a lista correta ---
+        _nearbyTalkables.RemoveAll(npc => npc == null);
+        // --- Fim Correção ---
+
+        foreach (var talkable in _nearbyTalkables)
+        {
+            if (talkable == null) continue;
+            float distance = Vector3.Distance(transform.position, talkable.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                _closestTalkable = talkable;
+            }
+        }
+
+        // Mostrar/Esconder cue apenas se o NPC mais próximo mudou
+        if (oldClosest != _closestTalkable)
+        {
+            if(oldClosest != null) oldClosest.ShowInteractionCue(false);
+            if(_closestTalkable != null) _closestTalkable.ShowInteractionCue(true);
+        }
+    }
+
+
     public void TryInteract()
     {
+        // Este método agora só é chamado se _closestTalkable for null
         if (_closestInteractable == null || inventoryManager == null)
         {
-            return;
+            return; // Nada para interagir (item) ou InventoryManager faltando
         }
 
         ItemData itemToPick = _closestInteractable.GetItemData();
         if (itemToPick == null)
         {
-             Debug.LogWarning($"Attempted to pick up item on object {_closestInteractable.gameObject.name}, but ItemData is not assigned!");
-             return;
+            Debug.LogWarning($"Attempted to pick up item on object {_closestInteractable.gameObject.name}, but ItemData is not assigned!");
+            return;
         }
 
         int quantityToPick = _closestInteractable.GetQuantity();
@@ -133,26 +225,21 @@ public class PlayerInteraction : MonoBehaviour
             {
                 playerAnimator.SetTrigger(_interactTriggerHash);
             }
+            // --- Correção: Usar itemToPick.displayName ---
             Debug.Log($"Picked up {quantityToPick}x {itemToPick.name} from {_closestInteractable.gameObject.name}");
+            // --- Fim Correção ---
 
-            // --- CORREÇÃO ---
-            // 1. Obtenha a referência ao GameObject ANTES de anular _closestInteractable
             GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
 
-            // 2. Anule a referência _closestInteractable (isso acontece na Unregister ou pode ser explícito)
-            // O método UnregisterInteractable já anula _closestInteractable se ele for o item que estamos interagindo
-            UnregisterInteractable(_closestInteractable);
-            // _closestInteractable = null; // Esta linha é redundante se Unregister já faz isso, mas ser explícito não faz mal.
+            UnregisterInteractable(_closestInteractable); // Remove da lista _nearbyInteractables e limpa _closestInteractable se for o item correto
 
-            // 3. Destrua o GameObject usando a referência que guardamos
             Destroy(itemGameObjectToDestroy);
-            // --- FIM CORREÇÃO ---
-
-
         }
         else
         {
+            // --- Correção: Usar itemToPick.name ---
             Debug.LogWarning($"Could not pick up {itemToPick.name}. Inventory full or AddItem failed.");
+             // --- Fim Correção ---
         }
     }
 
