@@ -11,13 +11,12 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     [Header("References")]
     [SerializeField] private Image itemIconImage;
     [SerializeField] private TextMeshProUGUI quantityText;
-    [SerializeField] private GameObject selectionHighlight; // Optional: for visual feedback
+    [SerializeField] private GameObject selectionHighlight;
 
     private InventorySlotData _slotData;
     private int _slotIndex;
-    private InventoryUI _inventoryUI; // Reference to the parent UI manager
+    private InventoryUI _inventoryUI;
 
-    private static InventorySlotUI _draggedSlotIconCopy = null; // The visual copy being dragged
 
     public void Initialize(InventoryUI inventoryUI, int slotIndex)
     {
@@ -32,12 +31,14 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         _slotData = slotData;
         if (itemIconImage == null || quantityText == null) return;
 
+        if(selectionHighlight) selectionHighlight.SetActive(false); // Hide highlight when updating
+
         if (_slotData != null && _slotData.itemData != null)
         {
             itemIconImage.sprite = _slotData.itemData.icon;
             itemIconImage.enabled = true;
-            quantityText.text = _slotData.quantity > 1 ? _slotData.quantity.ToString() : "";
-            quantityText.enabled = _slotData.quantity > 1;
+            quantityText.text = _slotData.quantity >= 1 ? _slotData.quantity.ToString() : "";
+            quantityText.enabled = _slotData.quantity >= 1;
         }
         else
         {
@@ -57,7 +58,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             quantityText.text = "";
             quantityText.enabled = false;
         }
-        _slotData = null; // Ensure data is cleared too
+        _slotData = null;
+        if(selectionHighlight) selectionHighlight.SetActive(false); // Hide highlight when clearing
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -80,79 +82,65 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        Debug.Log($"Slot {_slotIndex} clicked with button {eventData.button}");
+        // Debug.Log($"Slot {_slotIndex} clicked with button {eventData.button}");
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             if (_inventoryUI != null && _slotData != null && _slotData.itemData != null)
             {
                 _inventoryUI.RequestUseItem(_slotIndex);
+                // Tooltip will be hidden by InventoryUI.RequestUseItem -> HideTooltip
             }
         }
-        // Left click could be for selection, or if not dragging, maybe quick equip/move to action bar
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.Log($"Begin drag on slot {_slotIndex} with button {eventData.button}");
+        // Debug.Log($"Begin drag on slot {_slotIndex} with button {eventData.button}");
         if (_slotData == null || _slotData.itemData == null || _inventoryUI == null) return;
         if (eventData.button != PointerEventData.InputButton.Left) return;
 
-        // Create a draggable copy of the icon
-        if (_draggedSlotIconCopy == null)
+        // Use the central draggedItemImage from InventoryUI for visual feedback
+        if (_inventoryUI.draggedItemImage != null)
         {
-            GameObject iconCopyObj = new GameObject("DraggedIcon");
-            iconCopyObj.transform.SetParent(_inventoryUI.transform); // Attach to main inventory canvas
-            iconCopyObj.transform.SetAsLastSibling(); // Render on top
-            iconCopyObj.AddComponent<RectTransform>();
-            Image img = iconCopyObj.AddComponent<Image>();
-            img.sprite = itemIconImage.sprite;
-            img.raycastTarget = false; // So it doesn't interfere with drop detection
-            iconCopyObj.GetComponent<RectTransform>().sizeDelta = GetComponent<RectTransform>().sizeDelta * 0.8f; // Slightly smaller
-            _draggedSlotIconCopy = iconCopyObj.AddComponent<InventorySlotUI>(); // Add dummy component to hold reference
-             _draggedSlotIconCopy.itemIconImage = img; // For potential visual changes during drag
-        }
-        
-        if (_draggedSlotIconCopy != null && _draggedSlotIconCopy.itemIconImage != null)
-        {
-            _draggedSlotIconCopy.itemIconImage.enabled = true;
-            _draggedSlotIconCopy.itemIconImage.sprite = itemIconImage.sprite;
+             _inventoryUI.draggedItemImage.sprite = itemIconImage.sprite;
+             _inventoryUI.draggedItemImage.gameObject.SetActive(true);
+             _inventoryUI.draggedItemImage.raycastTarget = false; // Ensure it doesn't block raycasts
         }
 
-
-        itemIconImage.enabled = false; // Hide original icon
+        // Hide the original icon and quantity text while dragging
+        itemIconImage.enabled = false;
         quantityText.enabled = false;
 
         _inventoryUI.OnDragStarted(_slotIndex);
+        _inventoryUI.HideTooltip(); // Hide tooltip when dragging starts
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (_draggedSlotIconCopy == null || eventData.button != PointerEventData.InputButton.Left) return;
-        _draggedSlotIconCopy.transform.position = eventData.position;
+        // The visual drag is handled by InventoryUI.Update()
+        // This method in InventorySlotUI is not strictly needed if only the visual is updated externally
+        // Debug.Log($"OnDrag on slot {_slotIndex} (original icon hidden)");
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        // Debug.Log($"End drag on slot {_slotIndex}");
         if (eventData.button != PointerEventData.InputButton.Left) return;
-        
-        if (_draggedSlotIconCopy != null)
-        {
-            Destroy(_draggedSlotIconCopy.gameObject);
-            _draggedSlotIconCopy = null;
-        }
 
-        // Restore original icon visibility before logic determines new state
-        if (_slotData != null && _slotData.itemData != null) {
-            itemIconImage.enabled = true;
-            quantityText.enabled = _slotData.quantity > 1;
-        } else {
-            ClearSlotDisplay();
-        }
+        // Hide the central draggedItemImage is handled by InventoryUI.OnDragEnded
 
+        // Restore original icon visibility.
+        // The UpdateSlotDisplay will be called by InventoryUI.OnDragEnded (via InventoryManager events)
+        // to set the final state based on where the item ended up.
+        itemIconImage.enabled = true;
+        quantityText.enabled = _slotData != null && _slotData.itemData != null && _slotData.quantity >= 1;
 
         if (_inventoryUI != null)
         {
             _inventoryUI.OnDragEnded(_slotIndex, eventData.pointerCurrentRaycast.gameObject);
         }
+
+        // Re-evaluate selection highlight state after drop
+         if (selectionHighlight) selectionHighlight.SetActive(eventData.pointerCurrentRaycast.gameObject == gameObject || eventData.pointerCurrentRaycast.gameObject.transform.IsChildOf(transform));
     }
 }

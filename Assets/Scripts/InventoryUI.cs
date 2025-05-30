@@ -20,7 +20,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI tooltipItemTypeText; // Optional
 
     [Header("Drag & Drop Visuals")]
-    [SerializeField] private Image draggedItemImage; // A separate image on canvas for drag visual
+    [SerializeField] public Image draggedItemImage; // A separate image on canvas for drag visual
 
     private List<InventorySlotUI> _slotUIInstances = new List<InventorySlotUI>();
     private PlayerControls _playerControls;
