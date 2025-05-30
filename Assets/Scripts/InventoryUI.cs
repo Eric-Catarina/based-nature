@@ -69,6 +69,18 @@ public class InventoryUI : MonoBehaviour
         CreateSlotUIInstances();
         RefreshAllSlotsUI(); // Initial draw
     }
+    
+    // Inside InventoryUI.cs
+    private void Update()
+    {
+        // Verifica se há um item sendo arrastado (usamos -1 como índice inválido)
+        // e se a imagem visual do item arrastado existe e está ativa
+        if (_draggedFromSlotIndex != -1 && draggedItemImage != null && draggedItemImage.gameObject.activeSelf)
+        {
+            // Move a imagem arrastada para a posição atual do mouse
+            draggedItemImage.transform.position = Mouse.current.position.ReadValue();
+        }
+    }
 
     private void TogglePanelInput(InputAction.CallbackContext context)
     {
@@ -195,6 +207,7 @@ public class InventoryUI : MonoBehaviour
     // --- Drag and Drop Logic ---
     public void OnDragStarted(int fromSlotIndex)
     {
+        Debug.Log($"Drag started from slot index: {fromSlotIndex}");
         _draggedFromSlotIndex = fromSlotIndex;
         if (draggedItemImage != null)
         {
