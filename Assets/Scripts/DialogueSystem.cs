@@ -74,6 +74,8 @@ public class DialogueSystem : MonoBehaviour
     {
         if (_isDialogueActive && _currentNPC != null)
         {
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.conversationSound); // Play hover sound when showing tooltip
+
             StartOrAdvanceDialogue(_currentNPC); // Chama para avançar a linha
         }
     }
@@ -108,6 +110,8 @@ public class DialogueSystem : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         Time.timeScale = 1f; // Despausa o jogo
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.endConversationSound); // Play hover sound when showing tooltip
+
     }
 
     public bool IsDialogueActive() => _isDialogueActive;

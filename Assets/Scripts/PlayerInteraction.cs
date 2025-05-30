@@ -228,7 +228,7 @@ private void OnInteractInput(InputAction.CallbackContext context)
             Debug.Log($"Picked up {quantityToPick}x {itemToPick.name} from {_closestInteractable.gameObject.name}");
             // --- Fim Correção ---
 
-        AudioManager.Instance.PlaySoundEffect(interactSound); 
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); // Toca o som de interação
 
             GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
 
