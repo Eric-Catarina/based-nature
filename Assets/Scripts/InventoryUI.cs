@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using TMPro;
+using DG.Tweening;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -31,7 +32,13 @@ public class InventoryUI : MonoBehaviour
     private RectTransform _inventoryPanelRectTransform;
 
     private int _draggedFromSlotIndex = -1; 
-
+    [Header("Tooltip Animation")]
+    [Tooltip("Duração da animação de scale para o tooltip.")]
+    [SerializeField] private float tooltipAnimationDuration = 0.2f; // Valor padrão de 0.2 segundos
+    [Tooltip("Escala máxima do tooltip durante a animação de popup.")]
+    [SerializeField] private float tooltipMaxScale = 1.1f;
+    [Tooltip("Facilidade (Ease) da animação de scale do tooltip.")]
+    [SerializeField] private Ease tooltipEase = Ease.OutBack;
     private void Awake()
     {
         if (Application.isPlaying)
@@ -190,10 +197,14 @@ public void ClosePanel()
         }
     }
 
-    public void ShowTooltip(ItemData item, RectTransform slotRectTransform)
+       public void ShowTooltip(ItemData item)
     {
+
         if (tooltipPanel == null || item == null) return;
 
+        ItemData _currentItem = item;
+
+        // Configuração dos textos
         tooltipItemNameText.text = item.itemName;
         tooltipItemDescriptionText.text = item.description;
         if (tooltipItemTypeText)
@@ -205,41 +216,27 @@ public void ClosePanel()
             }
         }
 
-        tooltipPanel.SetActive(true);
-
-        LayoutRebuilder.ForceRebuildLayoutImmediate(tooltipPanel.GetComponent<RectTransform>());
-
-        RectTransform tooltipRect = tooltipPanel.GetComponent<RectTransform>();
-        Vector3 slotGlobalPosition;
-
-        Vector3[] slotCorners = new Vector3[4];
-        slotRectTransform.GetWorldCorners(slotCorners);
-        slotGlobalPosition = slotCorners[2];
-
-        Canvas canvas = GetComponentInParent<Canvas>();
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, slotGlobalPosition, canvas.worldCamera, out localPoint);
-
-        tooltipRect.anchoredPosition = localPoint + new Vector2(tooltipRect.sizeDelta.x * tooltipRect.pivot.x + 5, -tooltipRect.sizeDelta.y * (1 - tooltipRect.pivot.y) - 5);
-
-        Vector2 canvasSize = (canvas.transform as RectTransform).sizeDelta;
-        Vector2 anchoredPos = tooltipRect.anchoredPosition;
-        Vector2 tooltipSize = tooltipRect.sizeDelta;
-
-        if (anchoredPos.x + tooltipSize.x * (1 - tooltipRect.pivot.x) > canvasSize.x / 2)
+        // Inicia a animação e ativa o painel (só fazemos efeito se já não estiver ativo)
+        if (!tooltipPanel.activeSelf)
         {
-            slotGlobalPosition = slotCorners[3];
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, slotGlobalPosition, canvas.worldCamera, out localPoint);
-            anchoredPos.x = localPoint.x - tooltipSize.x * tooltipRect.pivot.x - 5;
+            // Define a escala inicial como zero
+            tooltipPanel.transform.localScale = Vector3.zero;
+
+            // Ativa o painel do tooltip
+            tooltipPanel.SetActive(true);
+
+            // Anima o tooltip para a escala desejada
+            tooltipPanel.transform.DOScale(tooltipMaxScale, tooltipAnimationDuration)
+                .From(0f)
+                .SetEase(tooltipEase)
+                .SetUpdate(true);
+
+            // Example: Center the tooltip on the screen (replace with your desired position logic)
+            tooltipPanel.transform.localPosition = Vector2.zero;
         }
-        if (anchoredPos.y - tooltipSize.y * tooltipRect.pivot.y < -canvasSize.y / 2)
-        {
-            slotGlobalPosition = slotCorners[0];
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, slotGlobalPosition, canvas.worldCamera, out localPoint);
-            anchoredPos.y = localPoint.y + tooltipSize.y * (1 - tooltipRect.pivot.y) + 5 + slotRectTransform.sizeDelta.y;
-        }
-        tooltipRect.anchoredPosition = anchoredPos;
+
     }
+
 
     public void HideTooltip()
     {

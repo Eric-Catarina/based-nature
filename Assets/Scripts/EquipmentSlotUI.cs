@@ -51,7 +51,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (_inventoryUIController != null && _currentEquippedItem != null)
         {
-            _inventoryUIController.ShowTooltip(_currentEquippedItem, GetComponent<RectTransform>());
+            _inventoryUIController.ShowTooltip(_currentEquippedItem);
         }
     }
 

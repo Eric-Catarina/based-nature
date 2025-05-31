@@ -83,7 +83,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.hoverSound); 
 
-            _inventoryUIController.ShowTooltip(_currentSlotData.itemData, GetComponent<RectTransform>());
+            _inventoryUIController.ShowTooltip(_currentSlotData.itemData);
 
             UITweenAnimations.HoverScale(transform as RectTransform, _originalScale.x * 1.1f);
             if (itemIconImage) UITweenAnimations.HoverColor(itemIconImage, hoverColor);
