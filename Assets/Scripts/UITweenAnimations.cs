@@ -10,6 +10,9 @@ public static class UITweenAnimations
     {
         if (panelRect == null) return;
 
+        // Garantir que qualquer Tween anterior seja interrompido
+        panelRect.DOKill(); // Interrompe qualquer tween anterior neste RectTransform
+
         panelRect.gameObject.SetActive(true);
 
         Vector3 originalScale = panelRect.localScale;
@@ -18,25 +21,27 @@ public static class UITweenAnimations
 
         if (cg == null)
         {
-            cg = panelRect.gameObject.AddComponent<CanvasGroup>(); // Use existing group or add if missing
+            cg = panelRect.gameObject.AddComponent<CanvasGroup>();
         }
-        cg.alpha = 0; // Start transparent
+        cg.alpha = 0;
 
-        // Tween de escala e fade em paralelo
         DOTween.Sequence()
-               .Append(panelRect.DOScale(originalScale, duration).SetEase(scaleEase)) // Tween de escala
-               .Join(cg.DOFade(1, duration).SetEase(fadeEase)) // Tween de fade
-               .SetUpdate(true); // Roda mesmo com Time.timeScale = 0
+               .Append(panelRect.DOScale(originalScale, duration).SetEase(scaleEase))
+               .Join(cg.DOFade(1, duration).SetEase(fadeEase))
+               .SetUpdate(true);
     }
 
-    // Animação de painel desaparecendo (escala)
     public static void PanelDisappear(RectTransform panelRect, float duration = 0.2f, Ease easeType = Ease.InBack, System.Action onComplete = null)
     {
         if (panelRect == null) return;
 
+        panelRect.DOKill(); // Interrompe qualquer tween anterior neste RectTransform
+        Vector3 originalScale = panelRect.localScale;
+
         panelRect.DOScale(Vector3.zero, duration).SetEase(easeType).SetUpdate(true).OnComplete(() =>
         {
-            panelRect.gameObject.SetActive(false);
+            // panelRect.gameObject.SetActive(false);
+            panelRect.localScale = originalScale; // Reseta a escala para o original
             onComplete?.Invoke();
         });
     }

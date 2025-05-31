@@ -60,7 +60,7 @@ public class InventoryUI : MonoBehaviour
             inventoryCanvasGroup.alpha = 1f; // Ensure it's fully visible at start
         }
         _inventoryPanelRectTransform = inventoryPanel.GetComponent<RectTransform>();
-        ClosePanel();
+        // ClosePanel();
     }
 
     private void OnEnable()
@@ -120,23 +120,32 @@ public class InventoryUI : MonoBehaviour
         AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.pickItemSound); // Play hover sound when opening panel
     }
 
-    public void ClosePanel()
+public void ClosePanel()
     {
-        inventoryPanel.SetActive(false);
-        if (equipmentPanel) equipmentPanel.SetActive(false); // NEW: Deactivate equipment panel
-        _isPanelOpen = false;
+        if (!_isPanelOpen) return;
+
+        _isPanelOpen = false; // Set false first to prevent repeated triggers
+
         HideTooltip();
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         if (draggedItemImage && draggedItemImage.gameObject.activeSelf)
         {
             draggedItemImage.gameObject.SetActive(false);
             if (_draggedFromSlotIndex != -1) UpdateSpecificSlotUI(_draggedFromSlotIndex);
             _draggedFromSlotIndex = -1;
         }
-        Time.timeScale = 1f;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.dropItemSound); // Play hover sound when opening panel
 
+
+        if (_inventoryPanelRectTransform != null)
+        {
+            UITweenAnimations.PanelDisappear(_inventoryPanelRectTransform, 0.3f, onComplete: () =>
+            {
+                inventoryPanel.SetActive(false);
+            });
+        }
     }
 
     private void CreateSlotUIInstances()
