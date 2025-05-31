@@ -23,10 +23,12 @@ public class InventoryUI : MonoBehaviour
 
     [Header("Drag & Drop Visuals")]
     [SerializeField] public Image draggedItemImage;
+    private CanvasGroup inventoryCanvasGroup; // Optional: CanvasGroup for fade effects
 
     private List<InventorySlotUI> _slotUIInstances = new List<InventorySlotUI>();
     private PlayerControls _playerControls;
     private bool _isPanelOpen = false;
+    private RectTransform _inventoryPanelRectTransform;
 
     private int _draggedFromSlotIndex = -1; // Stores index if dragging FROM inventory slot
 
@@ -45,6 +47,19 @@ public class InventoryUI : MonoBehaviour
 
         if (draggedItemImage) draggedItemImage.gameObject.SetActive(false);
         if (tooltipPanel) tooltipPanel.SetActive(false);
+        if (inventoryCanvasGroup == null)
+        {
+            inventoryCanvasGroup = inventoryPanel.GetComponent<CanvasGroup>();
+            if (inventoryCanvasGroup == null)
+            {
+                inventoryCanvasGroup = inventoryPanel.AddComponent<CanvasGroup>();
+            }
+        }
+        else
+        {
+            inventoryCanvasGroup.alpha = 1f; // Ensure it's fully visible at start
+        }
+        _inventoryPanelRectTransform = inventoryPanel.GetComponent<RectTransform>();
         ClosePanel();
     }
 
@@ -101,6 +116,7 @@ public class InventoryUI : MonoBehaviour
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        UITweenAnimations.PanelAppear(_inventoryPanelRectTransform, 0.3f);
         AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.pickItemSound); // Play hover sound when opening panel
     }
 

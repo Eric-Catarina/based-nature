@@ -856,7 +856,7 @@ GameObject:
   - component: {fileID: 516527182}
   - component: {fileID: 516527181}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: RefCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2656,6 +2656,7 @@ GameObject:
   - component: {fileID: 1583210360}
   - component: {fileID: 1583210359}
   - component: {fileID: 1583210363}
+  - component: {fileID: 1583210364}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2771,6 +2772,18 @@ MonoBehaviour:
   tooltipItemDescriptionText: {fileID: 1556283689}
   tooltipItemTypeText: {fileID: 450882820}
   draggedItemImage: {fileID: 329072571}
+--- !u!225 &1583210364
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1583210358}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1001 &1772868412
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2996,6 +3009,61 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 795d3b2b4f78cefac8478f287894bdc3, type: 3}
   m_PrefabInstance: {fileID: 1828805439}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1837800788
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1837800790}
+  - component: {fileID: 1837800789}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1837800789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837800788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6e5e59a20787981cb7343e8d5906ad1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clickSound: {fileID: 11400000, guid: 2f87d6dfc517093e1b82fdae14fe792f, type: 2}
+  conversationSound: {fileID: 11400000, guid: a183e8474933df7e3a71a06aeb831a9d, type: 2}
+  endConversationSound: {fileID: 11400000, guid: af56eba30768c128fbfe8f617aa3d7be, type: 2}
+  hoverSound: {fileID: 11400000, guid: e5063dd1ff3d46e9a963fe4117878c59, type: 2}
+  pickItemSound: {fileID: 11400000, guid: ce1aa6e3c047d519f83cf8d3f689bb30, type: 2}
+  dropItemSound: {fileID: 11400000, guid: 0155830aeaa5aeecd9b1433787ebf619, type: 2}
+  openSound: {fileID: 11400000, guid: ce1aa6e3c047d519f83cf8d3f689bb30, type: 2}
+  closeSound: {fileID: 11400000, guid: 0155830aeaa5aeecd9b1433787ebf619, type: 2}
+  equipSound: {fileID: 11400000, guid: 4ce6a130461e3e7c499b5c5df717df47, type: 2}
+  onDragSound: {fileID: 11400000, guid: 871520660695173acaff074e06e3a594, type: 2}
+  onDropSound: {fileID: 11400000, guid: 503c432c607755f3d9f533b705d51aeb, type: 2}
+--- !u!4 &1837800790
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1837800788}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 61.80503, y: 43.32229, z: 246.95575}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1841070170
 GameObject:
   m_ObjectHideFlags: 0
@@ -3201,7 +3269,6 @@ GameObject:
   - component: {fileID: 1905772206}
   - component: {fileID: 1905772209}
   - component: {fileID: 1905772210}
-  - component: {fileID: 1905772211}
   m_Layer: 5
   m_Name: GameManager
   m_TagString: Untagged
@@ -3284,29 +3351,6 @@ MonoBehaviour:
   npcNameText: {fileID: 898391638}
   dialogueText: {fileID: 749415025}
   playerInput: {fileID: 1039694056}
---- !u!114 &1905772211
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1905772205}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6e5e59a20787981cb7343e8d5906ad1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clickSound: {fileID: 11400000, guid: 2f87d6dfc517093e1b82fdae14fe792f, type: 2}
-  conversationSound: {fileID: 11400000, guid: a183e8474933df7e3a71a06aeb831a9d, type: 2}
-  endConversationSound: {fileID: 11400000, guid: af56eba30768c128fbfe8f617aa3d7be, type: 2}
-  hoverSound: {fileID: 11400000, guid: e5063dd1ff3d46e9a963fe4117878c59, type: 2}
-  pickItemSound: {fileID: 11400000, guid: ce1aa6e3c047d519f83cf8d3f689bb30, type: 2}
-  dropItemSound: {fileID: 11400000, guid: 0155830aeaa5aeecd9b1433787ebf619, type: 2}
-  openSound: {fileID: 11400000, guid: ce1aa6e3c047d519f83cf8d3f689bb30, type: 2}
-  closeSound: {fileID: 11400000, guid: 0155830aeaa5aeecd9b1433787ebf619, type: 2}
-  equipSound: {fileID: 11400000, guid: 4ce6a130461e3e7c499b5c5df717df47, type: 2}
-  onDragSound: {fileID: 11400000, guid: 871520660695173acaff074e06e3a594, type: 2}
-  onDropSound: {fileID: 11400000, guid: 503c432c607755f3d9f533b705d51aeb, type: 2}
 --- !u!1001 &1967010378
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4119,5 +4163,6 @@ SceneRoots:
   - {fileID: 2060456917}
   - {fileID: 516527184}
   - {fileID: 1412124206}
-  - {fileID: 1583210362}
   - {fileID: 1905772208}
+  - {fileID: 1837800790}
+  - {fileID: 1583210362}
