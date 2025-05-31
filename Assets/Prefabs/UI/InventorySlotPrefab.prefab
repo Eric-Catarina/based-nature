@@ -304,7 +304,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemIconImage: {fileID: 3548198879863176212}
   quantityText: {fileID: 318607256655319174}
+  quantityBackground: {fileID: 1719275971366486772}
   selectionHighlight: {fileID: 8961717155839150702}
+  hoverColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  jiggleStrength: 10
+  jiggleDuration: 0.3
+  jiggleVibrato: 10
+  jiggleEase: 24
 --- !u!1 &8961717155839150702
 GameObject:
   m_ObjectHideFlags: 0

@@ -56,11 +56,13 @@ public class DialogueSystem : MonoBehaviour
 
             if (playerInput != null)
             {
-                 playerInput.SwitchCurrentActionMap("UI"); // Mudar para mapa de UI onde Submit avança
+                playerInput.SwitchCurrentActionMap("UI"); // Mudar para mapa de UI onde Submit avança
             }
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             Time.timeScale = 0f; // Pausa o jogo durante o diálogo
+            UITweenAnimations.PanelAppear(dialoguePanel.GetComponent<RectTransform>(), 0.3f);
+
         }
         else // Avançando o diálogo com o mesmo NPC
         {
@@ -101,7 +103,7 @@ public class DialogueSystem : MonoBehaviour
     {
         _isDialogueActive = false;
         _currentNPC = null;
-        if (dialoguePanel) dialoguePanel.SetActive(false);
+        // if (dialoguePanel) dialoguePanel.SetActive(false);
 
         if (playerInput != null)
         {
@@ -111,7 +113,10 @@ public class DialogueSystem : MonoBehaviour
         Cursor.visible = false;
         Time.timeScale = 1f; // Despausa o jogo
         AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.endConversationSound); // Play hover sound when showing tooltip
-
+            UITweenAnimations.PanelDisappear(dialoguePanel.GetComponent<RectTransform>(), 0.3f, onComplete: () =>
+            {
+                dialoguePanel.SetActive(false);
+            });
     }
 
     public bool IsDialogueActive() => _isDialogueActive;

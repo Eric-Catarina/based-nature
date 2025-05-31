@@ -15,7 +15,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     [Header("Settings")]
     [SerializeField] private Color hoverColor = Color.yellow;
-    [SerializeField] private float jiggleStrength = 5f;
+    [SerializeField] private float jiggleStrength = 10f;
     [SerializeField] private float jiggleDuration = 0.3f;
     [SerializeField] private int jiggleVibrato = 10;
     [SerializeField] private Ease jiggleEase = Ease.OutElastic;
