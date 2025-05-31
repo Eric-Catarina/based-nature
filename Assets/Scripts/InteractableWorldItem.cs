@@ -32,6 +32,13 @@ public class InteractableWorldItem : MonoBehaviour
     [Tooltip("Duração de um ciclo completo (tilt para um lado + volta + tilt para o outro + volta) do tilt.")]
     [SerializeField] private float tiltDuration = 3f; // Duração do ciclo de tilt
 
+    [SerializeField, Tooltip("Força do efeito de 'punch' aplicado ao outline quando ativado.")]
+    private float outlinePunchStrength = 0.1f; // Força do efeito de punch
+    [SerializeField, Tooltip("Duração do efeito de 'punch' aplicado ao outline quando ativado.")]
+    private float outlinePunchDuration = 0.2f; // Duração do punch
+
+    [SerializeField] private float outlineWidth = 1.1f;
+
     // --- Componentes e Estado ---
     private Renderer _itemRenderer; // Cache do Renderer do item (para outline)
     private List<Material> _originalMaterials = new List<Material>(); // Materiais originais do item
@@ -109,7 +116,7 @@ public class InteractableWorldItem : MonoBehaviour
 
     // --- Gerenciamento do Outline ---
     // Chamado pelo PlayerInteraction quando o jogador está perto
-    public void ApplyOutline() // Permanece público
+  public void ApplyOutline() // Permanece público
     {
         if (_itemRenderer == null || outlineMaterial == null || _isOutlined) return;
 
@@ -120,6 +127,9 @@ public class InteractableWorldItem : MonoBehaviour
         _itemRenderer.materials = currentMaterials.ToArray(); // Aplica os materiais
         _isOutlined = true;
         // AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.hoverSound); // Toca o som, se necessário
+
+        // Apply DOTween Punch Animation
+        transform.DOPunchScale(Vector3.one * outlinePunchStrength, outlinePunchDuration, 10, 1f); // Punch
     }
 
     // Chamado pelo PlayerInteraction quando o jogador se afastar
@@ -130,8 +140,10 @@ public class InteractableWorldItem : MonoBehaviour
         _itemRenderer.materials = _originalMaterials.ToArray(); // Restaura os materiais originais clonados
         _isOutlined = false;
         // AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.hoverSound); // Toca o som, se necessário
-    }
 
+         // Apply DOTween Punch Animation
+        transform.DOPunchScale(Vector3.one * -outlinePunchStrength, outlinePunchDuration, 10, 1f); // Punch para o outro lado
+    }
 
     // --- Gerenciamento do Trigger (Comunicação com PlayerInteraction) ---
     private void OnTriggerEnter(Collider other)
