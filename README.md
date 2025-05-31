@@ -2,6 +2,13 @@
 
 👋 This is a cool 3D prototype base built with **Unity 6** and **C#**.
 
+## 🎥 Gameplay Preview
+
+<div align="center">
+  <video src="NaturesQuestCompress.mp4" controls width="800"></video>
+  <p><em>Watch Nature's Quest in action!</em></p>
+</div>
+
 ## ✨ Features Implemented
 
 *   🚶 **Third-Person Character Movement:** Smooth controls with Cinemachine for a dynamic camera.
