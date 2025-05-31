@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/Inventory/InventoryManager.cs
+// Path: Assets/Scripts/InventoryManager.cs
 using UnityEngine;
 using System.Collections.Generic;
 using System;
@@ -7,7 +7,7 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
  
-
+    [Header("Inventory Settings")]
     [SerializeField] private int inventorySize = 20;
     public int InventorySize => inventorySize;
 
@@ -47,6 +47,7 @@ public class InventoryManager : MonoBehaviour
         if (item == null || quantity <= 0) return false;
 
         bool itemAdded = false;
+        int originalQuantity = quantity;
 
         if (item.isStackable)
         {
@@ -88,14 +89,13 @@ public class InventoryManager : MonoBehaviour
             }
         }
         
-        if (!itemAdded && quantity > 0)
+        if (!itemAdded && originalQuantity > 0)
         {
-             Debug.LogWarning($"Inventory full. Could not add any of {item.itemName}.");
-             return false;
+             Debug.LogWarning($"[InventoryManager] Inventory full. Could not add any of {item.itemName}.");
         }
-        if (itemAdded && quantity > 0)
+        else if (itemAdded && quantity > 0) // Some items added, but not all
         {
-             Debug.LogWarning($"Inventory partially full. Could not add all {quantity} of {item.itemName}.");
+             Debug.LogWarning($"[InventoryManager] Inventory partially full. Could not add all {originalQuantity} of {item.itemName}. {quantity} remaining.");
         }
 
         if(itemAdded) OnInventoryChanged?.Invoke();
@@ -125,6 +125,41 @@ public class InventoryManager : MonoBehaviour
         OnInventorySlotChanged?.Invoke(slotIndex);
         OnInventoryChanged?.Invoke();
         return true;
+    }
+
+    public bool RemoveSpecificItem(ItemData itemToRemove, int quantity = 1)
+    {
+        if (itemToRemove == null || quantity <= 0) return false;
+
+        int quantityActuallyRemoved = 0;
+        bool anyItemRemovedThisCall = false;
+
+        for (int i = _inventorySlots.Count - 1; i >= 0; i--) 
+        {
+            if (!_inventorySlots[i].IsEmpty() && _inventorySlots[i].itemData == itemToRemove)
+            {
+                int amountInSlot = _inventorySlots[i].quantity;
+                int amountToRemoveFromThisSlot = Mathf.Min(quantity - quantityActuallyRemoved, amountInSlot);
+
+                if (amountToRemoveFromThisSlot > 0)
+                {
+                    _inventorySlots[i].AddQuantity(-amountToRemoveFromThisSlot);
+                    quantityActuallyRemoved += amountToRemoveFromThisSlot;
+                    anyItemRemovedThisCall = true;
+
+                    if (_inventorySlots[i].quantity <= 0)
+                    {
+                        _inventorySlots[i].Clear();
+                    }
+                    OnInventorySlotChanged?.Invoke(i);
+                }
+
+                if (quantityActuallyRemoved >= quantity) break;
+            }
+        }
+
+        if (anyItemRemovedThisCall) OnInventoryChanged?.Invoke();
+        return quantityActuallyRemoved >= quantity;
     }
 
     public void MoveItem(int fromIndex, int toIndex)
@@ -181,41 +216,35 @@ public class InventoryManager : MonoBehaviour
         if (slotIndex < 0 || slotIndex >= _inventorySlots.Count || _inventorySlots[slotIndex].IsEmpty()) return;
 
         ItemData itemToUse = _inventorySlots[slotIndex].itemData;
-        Debug.Log($"Attempting to use {itemToUse.itemName}");
 
         if (itemToUse.isUsable)
         {
             if (itemToUse.itemType == ItemType.Consumable)
             {
-                Debug.Log($"{itemToUse.itemName} consumed. (Effect logic to be implemented)");
-                AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound);
+                // AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); // Exemplo
                 RemoveItemFromSlot(slotIndex, 1);
             }
-            // Add other use cases, e.g., equipping
+            // Adicionar outras lógicas de uso aqui
         }
         else if (itemToUse.isEquippable)
         {
-            Debug.Log($"Attempting to equip {itemToUse.itemName}. (Equipment logic to be implemented)");
-            // EquipmentManager.Instance.EquipItem(itemToUse, slotIndex);
-        }
-        else
-        {
-            Debug.Log($"{itemToUse.itemName} is not usable or equippable.");
+            // Lógica de equipar normalmente é tratada pela UI (drag-drop, right-click menu)
         }
     }
 
     public List<InventorySlotSaveData> GetSaveData()
     {
         List<InventorySlotSaveData> saveData = new List<InventorySlotSaveData>();
-        foreach (InventorySlotData slot in _inventorySlots)
+        for (int i = 0; i < _inventorySlots.Count; i++) // Salva todos os slots, incluindo vazios
         {
+            InventorySlotData slot = _inventorySlots[i];
             if (!slot.IsEmpty())
             {
                 saveData.Add(new InventorySlotSaveData(slot.itemData.id, slot.quantity));
             }
             else
             {
-                saveData.Add(new InventorySlotSaveData(null, 0));
+                saveData.Add(new InventorySlotSaveData(null, 0)); // Representa slot vazio
             }
         }
         return saveData;
@@ -225,28 +254,20 @@ public class InventoryManager : MonoBehaviour
     {
         if (itemDatabaseDict == null)
         {
-            Debug.LogError("ItemDatabase dictionary is null. Cannot load inventory.");
-            InitializeInventory(); // Reset to empty or default
+            Debug.LogError("[InventoryManager] ItemDatabase dictionary is null. Cannot load inventory.");
+            InitializeInventory(); 
             OnInventoryChanged?.Invoke();
             return;
         }
 
-        if (slotSaveDataList == null || slotSaveDataList.Count == 0) // No save data or empty save data
+        InitializeInventory(); // Limpa e re-inicializa para o tamanho correto
+        
+        if (slotSaveDataList == null) 
         {
-            InitializeInventory(); // Reset to empty or default
-            OnInventoryChanged?.Invoke();
+            OnInventoryChanged?.Invoke(); // Notifica a UI que o inventário está (agora) vazio
             return;
         }
         
-        if (_inventorySlots.Count != slotSaveDataList.Count && _inventorySlots.Count != inventorySize)
-        {
-             // If inventory size changed or mismatch, reinitialize to correct size first.
-             // This prototype assumes inventorySize is fixed after Awake.
-             // If it can change, you might need to adjust _inventorySlots list size here.
-             InitializeInventory();
-        }
-
-
         for (int i = 0; i < inventorySize; i++)
         {
             if (i < slotSaveDataList.Count)
@@ -260,20 +281,14 @@ public class InventoryManager : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogWarning($"Item with ID '{savedSlot.itemId}' not found in database. Slot {i} will be empty.");
-                        _inventorySlots[i].Clear();
+                        // Item ID não encontrado, slot permanece vazio
                     }
                 }
-                else
-                {
-                    _inventorySlots[i].Clear();
-                }
+                // else, slot estava vazio no save, permanece vazio
             }
-            else // If save data has fewer slots than current inventory size (e.g. size increased)
-            {
-                 _inventorySlots[i].Clear();
-            }
+            // else, save data é menor que o inventário, slots extras permanecem vazios
+            OnInventorySlotChanged?.Invoke(i); // Atualiza a UI para cada slot
         }
-        OnInventoryChanged?.Invoke();
+        OnInventoryChanged?.Invoke(); // Notificação final para a UI
     }
 }
