@@ -5,7 +5,9 @@
 ## 🎥 Gameplay Preview
 
 <div align="center">
-  <video src="NaturesQuestCompress.mp4" controls width="800"></video>
+
+https://github.com/user-attachments/assets/a6938a02-2f7a-4954-b5d5-913e59166371
+
   <p><em>Watch Nature's Quest in action!</em></p>
 </div>
 
