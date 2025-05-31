@@ -162,7 +162,7 @@ public class SaveSystem : MonoBehaviour
                             if (equipped)
                             {
                                 // Remove o item do inventário se ele também foi carregado lá (para evitar duplicatas)
-                                inventoryManager.RemoveSpecificItem(itemToEquip, 1); 
+                                // inventoryManager.RemoveSpecificItem(itemToEquip, 1); 
                             }
                         }
                         else
