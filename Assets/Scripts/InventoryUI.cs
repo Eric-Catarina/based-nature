@@ -232,7 +232,7 @@ public void ClosePanel()
                 .SetUpdate(true);
 
             // Example: Center the tooltip on the screen (replace with your desired position logic)
-            tooltipPanel.transform.localPosition = Vector2.zero;
+            // tooltipPanel.transform.localPosition = Vector2.zero;
         }
 
     }
