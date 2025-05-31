@@ -4,6 +4,7 @@ using UnityEngine;
 public class AudioManager : MonoBehaviour
 {
     private static AudioManager _instance;
+    [SerializeField] private AudioClip backgroundMusic; // Música de fundo, se necessário
     public static AudioManager Instance
     {
         get
@@ -18,7 +19,7 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public SoundEffectDefinition clickSound, conversationSound, endConversationSound, hoverSound, pickItemSound, dropItemSound, openSound, closeSound, equipSound, onDragSound,onDropSound; // Definição de som padrão, se necessário
+    public SoundEffectDefinition clickSound, conversationSound, endConversationSound, hoverSound, pickItemSound, dropItemSound, openSound, closeSound, equipSound, onDragSound, onDropSound; // Definição de som padrão, se necessário
 
     private void Awake()
     {
@@ -97,5 +98,32 @@ public class AudioManager : MonoBehaviour
 
         audioSource.Play();
         Destroy(tempAudioSourceGO, clipToPlay.length / audioSource.pitch);
+    }
+
+    private void PlayBackgroundMusic(AudioClip musicClip)
+    {
+        if (musicClip == null)
+        {
+            Debug.LogWarning("Background music clip is null.");
+            return;
+        }
+
+        GameObject musicGO = new GameObject("BackgroundMusic");
+        AudioSource audioSource = musicGO.AddComponent<AudioSource>();
+        audioSource.clip = musicClip;
+        audioSource.loop = true; // Loop para música de fundo
+        audioSource.volume = 0.5f; // Volume padrão, ajuste conforme necessário
+        audioSource.Play();
+
+        // Opcional: Não destruir o GameObject se você quiser que a música continue tocando entre cenas
+        // DontDestroyOnLoad(musicGO);
+    }
+    private void Start()
+    {
+        // Se você tiver música de fundo, inicie-a aqui
+        if (backgroundMusic != null)
+        {
+            PlayBackgroundMusic(backgroundMusic);
+        }
     }
 }

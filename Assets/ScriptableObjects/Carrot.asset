@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 2e10bee4-f7d5-42aa-8574-5ce6fd211eb8
   itemName: Carrot
-  description: 
+  description: Carrots are great for the teeth!
   icon: {fileID: 21300000, guid: b0c28ae1c7ea25b6a8b4647c7392ee16, type: 3}
   itemType: 1
   isStackable: 1
