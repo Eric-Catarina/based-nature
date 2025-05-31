@@ -47,7 +47,7 @@ public class DialogueSystem : MonoBehaviour
 
         if (!_isDialogueActive || _currentNPC != npc) 
         {
-            Debug.Log($"Starting dialogue with {npc.GetNpcName()}");
+
             _currentNPC = npc;
             _currentDialogueLineIndex = 0;
             _isDialogueActive = true;

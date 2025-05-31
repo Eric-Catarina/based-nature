@@ -29,11 +29,11 @@ public class PlayerInteraction : MonoBehaviour
         _playerControls = new PlayerControls();
         if (inventoryManager == null)
         {
-            Debug.LogError("InventoryManager not assigned to PlayerInteraction.");
+
         }
         if (dialogueSystem == null)
         {
-             Debug.LogError("DialogueSystem not assigned to PlayerInteraction.");
+
         }
         if (playerAnimator == null)
         {
@@ -205,7 +205,7 @@ public class PlayerInteraction : MonoBehaviour
         ItemData itemToPick = _closestInteractable.GetItemData();
         if (itemToPick == null)
         {
-            Debug.LogWarning($"Attempted to pick up item on object {_closestInteractable.gameObject.name}, but ItemData is not assigned!");
+
             return;
         }
 
@@ -217,7 +217,7 @@ public class PlayerInteraction : MonoBehaviour
             {
                 playerAnimator.SetTrigger(_interactTriggerHash);
             }
-            Debug.Log($"Picked up {quantityToPick}x {itemToPick.itemName} from {_closestInteractable.gameObject.name}");
+
 
             AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); 
             GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
@@ -232,7 +232,7 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"Could not pick up {itemToPick.itemName}. Inventory full or AddItem failed.");
+
         }
     }
 

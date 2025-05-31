@@ -26,12 +26,12 @@ public class ItemDatabase : ScriptableObject
         {
             if (item == null)
             {
-                Debug.LogWarning("[ItemDatabase] Found a null ItemData in the 'allGameItems' list.");
+
                 continue;
             }
             if (string.IsNullOrEmpty(item.id)) 
             {
-                Debug.LogError($"[ItemDatabase] Item asset '{item.name}' has a null or empty ID. Ensure ItemData.cs has OnValidate logic to assign GUIDs.");
+
                 continue;
             }
             if (!_itemDictionary.ContainsKey(item.id))
@@ -40,7 +40,7 @@ public class ItemDatabase : ScriptableObject
             }
             else
             {
-                Debug.LogWarning($"[ItemDatabase] Duplicate Item ID '{item.id}' found for item '{item.itemName}'. The item '{_itemDictionary[item.id].itemName}' is already using this ID. This will cause issues!");
+
             }
         }
         _isInitialized = true;
@@ -73,7 +73,7 @@ public class ItemDatabase : ScriptableObject
         
         RefreshDatabase(); 
         EditorUtility.SetDirty(this);
-        Debug.Log($"[ItemDatabase] Populated with {allGameItems.Count} items from project. Dictionary has {_itemDictionary.Count} entries.");
+
     }
     #endif
 }

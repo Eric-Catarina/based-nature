@@ -91,11 +91,11 @@ public class InventoryManager : MonoBehaviour
         
         if (!itemAdded && originalQuantity > 0)
         {
-             Debug.LogWarning($"[InventoryManager] Inventory full. Could not add any of {item.itemName}.");
+
         }
         else if (itemAdded && quantity > 0) 
         {
-             Debug.LogWarning($"[InventoryManager] Inventory partially full. Could not add all {originalQuantity} of {item.itemName}. {quantity} remaining.");
+
         }
 
         if(itemAdded) OnInventoryChanged?.Invoke();
@@ -254,7 +254,7 @@ public class InventoryManager : MonoBehaviour
     {
         if (itemDatabaseDict == null)
         {
-            Debug.LogError("[InventoryManager] ItemDatabase dictionary is null. Cannot load inventory.");
+
             InitializeInventory(); 
             OnInventoryChanged?.Invoke();
             return;

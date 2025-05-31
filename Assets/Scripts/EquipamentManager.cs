@@ -45,7 +45,7 @@ public class EquipmentManager : MonoBehaviour
                 uiSlot.Initialize(this);
                 if (_uiSlotMapping.ContainsKey(uiSlot.slotType))
                 {
-                     Debug.LogWarning($"[EquipmentManager] Duplicate EquipmentType {uiSlot.slotType} configured in UI slots.");
+
                 }
                 _uiSlotMapping[uiSlot.slotType] = uiSlot;
                 _equippedItems[uiSlot.slotType] = null;
@@ -53,7 +53,7 @@ public class EquipmentManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("[EquipmentManager] An EquipmentSlotUI in the list is null.");
+
             }
         }
     }
@@ -69,7 +69,7 @@ public class EquipmentManager : MonoBehaviour
 
         if (!_uiSlotMapping.ContainsKey(targetSlotType))
         {
-            Debug.LogWarning($"[EquipmentManager] No UI slot configured for equipment type: {targetSlotType}. Cannot equip {itemToEquip.itemName}.");
+
             return false;
         }
 
@@ -99,7 +99,7 @@ public class EquipmentManager : MonoBehaviour
         }
         else
         {
-             Debug.LogError("[EquipmentManager] InventoryManager not found to manage item transfers.");
+
         }
         return true;
     }
@@ -124,7 +124,7 @@ public class EquipmentManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[EquipmentManager] Could not return {itemToUnequip.itemName} to inventory: InventoryManager not assigned.");
+
         }
     }
 

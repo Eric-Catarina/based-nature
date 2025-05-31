@@ -36,7 +36,7 @@ public class AudioManager : MonoBehaviour
     {
         if (soundDef == null || soundDef.clips == null || soundDef.clips.Length == 0)
         {
-            Debug.LogWarning("SoundEffectDefinition is null or has no clips.");
+
             return;
         }
 
@@ -45,7 +45,7 @@ public class AudioManager : MonoBehaviour
 
         if (clipToPlay == null)
         {
-            Debug.LogWarning("Selected AudioClip is null.");
+
             return;
         }
 
@@ -74,7 +74,7 @@ public class AudioManager : MonoBehaviour
     {
         if (soundDef == null || soundDef.clips == null || soundDef.clips.Length == 0)
         {
-            Debug.LogWarning("SoundEffectDefinition is null or has no clips for UI sound.");
+
             return;
         }
 
@@ -82,7 +82,7 @@ public class AudioManager : MonoBehaviour
 
         if (clipToPlay == null)
         {
-            Debug.LogWarning("Selected AudioClip for UI sound is null.");
+
             return;
         }
 
@@ -104,7 +104,7 @@ public class AudioManager : MonoBehaviour
     {
         if (musicClip == null)
         {
-            Debug.LogWarning("Background music clip is null.");
+
             return;
         }
 

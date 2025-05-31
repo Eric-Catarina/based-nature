@@ -315,7 +315,7 @@ public void ClosePanel()
                 }
                 else
                 {
-                    Debug.LogWarning($"Cannot equip {itemToEquip?.itemName ?? "null"} to {targetEquipmentSlotUI.slotType} slot. Item not equipable or wrong slot type.");
+
                     UpdateSpecificSlotUI(fromIndex); 
                 }
                 return; 
@@ -323,17 +323,17 @@ public void ClosePanel()
         }
 
         
-        Debug.Log("Item dropped outside a valid slot.");
+
         
         ItemData itemToReturn = inventoryManager.GetSlotAtIndex(fromIndex).itemData;
         if (itemToReturn != null)
         {
             inventoryManager.RemoveItemFromSlot(fromIndex, 1); 
-            Debug.Log($"Item {itemToReturn.itemName} removed from inventory.");
+
         }
         else
         {
-            Debug.LogWarning("No item to return from inventory slot.");
+
         }
         UpdateSpecificSlotUI(fromIndex);
     }
@@ -415,7 +415,7 @@ public void ClosePanel()
                 }
                 else
                 {
-                    Debug.LogWarning($"Cannot swap {sourceItem?.itemName ?? "null"} to {targetEquipmentSlotUI.slotType} slot. Item not suitable.");
+
                     
                 }
                 return; 
@@ -428,11 +428,11 @@ public void ClosePanel()
         if (itemToReturn != null)
         {
             EquipmentManager.Instance.UnequipItem(originalFromSlotType); 
-            Debug.Log($"Item {itemToReturn.itemName} unequipped and returned to inventory.");
+
         }
         else
         {
-            Debug.LogWarning("No item to return from equipment slot.");
+
         }
     }
 }

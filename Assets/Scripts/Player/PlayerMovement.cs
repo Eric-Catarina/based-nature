@@ -35,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Main Camera not found. Player movement might not work as expected relative to camera.");
+
         }
 
         _rigidbody.freezeRotation = true; 

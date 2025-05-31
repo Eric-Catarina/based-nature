@@ -73,7 +73,7 @@ public class TalkableNPC : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("DialogueSystem not initialized for this NPC.");
+
         }
     }
 }

@@ -78,7 +78,7 @@ public class SaveSystem : MonoBehaviour
     {
         if (inventoryManager == null || itemDatabase == null || equipmentManager == null)
         {
-            Debug.LogError("[SaveSystem] Cannot save: Required managers are not set up.");
+
             return;
         }
 
@@ -103,11 +103,11 @@ public class SaveSystem : MonoBehaviour
         try
         {
             File.WriteAllText(savePath, json);
-            Debug.Log($"[SaveSystem] Game Saved to: {savePath}");
+
         }
         catch (Exception e)
         {
-            Debug.LogError($"[SaveSystem] Failed to save game to {savePath}. Error: {e.Message}");
+
         }
     }
 
@@ -115,7 +115,7 @@ public class SaveSystem : MonoBehaviour
     {
         if (inventoryManager == null || itemDatabase == null || equipmentManager == null)
         {
-            Debug.LogError("[SaveSystem] Cannot load: Required managers are not set up.");
+
             return;
         }
         
@@ -139,7 +139,7 @@ public class SaveSystem : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"[SaveSystem] Failed to read save file from {savePath}. Error: {e.Message}");
+
         }
         
         if (fileExists && !string.IsNullOrEmpty(json))
@@ -167,21 +167,21 @@ public class SaveSystem : MonoBehaviour
                         }
                         else
                         {
-                            Debug.LogWarning($"[SaveSystem] Could not load equipped item (ID: {equippedItemSave.itemId}, Slot: {equippedItemSave.slotType}). Item not found, not equippable, or slot mismatch.");
+
                         }
                     }
                 }
-                Debug.Log("[SaveSystem] Game data loaded and applied.");
+
             }
             else
             {
-                 Debug.LogWarning("[SaveSystem] Failed to parse save data from JSON. Starting fresh.");
+
                  inventoryManager.LoadSaveData(new List<InventorySlotSaveData>(), itemDatabase._itemDictionary);
             }
         }
         else
         {
-            Debug.Log("[SaveSystem] No save file found or data is empty. Starting fresh.");
+
             inventoryManager.LoadSaveData(new List<InventorySlotSaveData>(), itemDatabase._itemDictionary);
         }
     }
@@ -193,11 +193,11 @@ public class SaveSystem : MonoBehaviour
         if (File.Exists(savePath))
         {
             File.Delete(savePath);
-            Debug.Log($"[SaveSystem] Save file deleted: {savePath}");
+
         }
         else
         {
-            Debug.Log($"[SaveSystem] Save file not found at: {savePath}. Nothing to delete.");
+
         }
     }
 }

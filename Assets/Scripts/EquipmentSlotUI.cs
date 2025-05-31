@@ -21,7 +21,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         _inventoryUIController = GetComponentInParent<Canvas>().GetComponentInChildren<InventoryUI>();
         if (_inventoryUIController == null)
         {
-            Debug.LogError("InventoryUI controller not found in parent Canvas for EquipmentSlotUI!");
+
         }
 
         ClearSlotDisplay();

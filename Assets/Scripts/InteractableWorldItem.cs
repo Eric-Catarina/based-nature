@@ -85,7 +85,7 @@ public class InteractableWorldItem : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("InteractableWorldItem could not find a Renderer component. Outline will not work.", this);
+
         }
 
         
