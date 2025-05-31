@@ -233,19 +233,17 @@ public class InventoryUI : MonoBehaviour
         if (!tooltipPanel.activeSelf)
         {
             
-            tooltipPanel.transform.localScale = Vector3.zero;
+            // tooltipPanel.transform.localScale = Vector3.zero;
 
             
             tooltipPanel.SetActive(true);
 
             
-            tooltipPanel.transform.DOScale(tooltipMaxScale, tooltipAnimationDuration)
-                .From(0f)
-                .SetEase(tooltipEase)
-                .SetUpdate(true);
+            // tooltipPanel.transform.DOScale(tooltipMaxScale, tooltipAnimationDuration)
+            //     .From(0f)
+            //     .SetEase(tooltipEase)
+            //     .SetUpdate(true);
 
-            
-            
         }
 
     }
@@ -257,12 +255,12 @@ public class InventoryUI : MonoBehaviour
         {
             
             DOTween.Kill(tooltipPanel.transform);
-
+tooltipPanel.SetActive(false) ;
             
-            tooltipPanel.transform.DOScale(0f, tooltipAnimationDuration * 0.5f)
-                .SetEase(Ease.InBack)
-                .OnComplete(() => tooltipPanel.SetActive(false)) 
-                .SetUpdate(true);
+            // tooltipPanel.transform.DOScale(0f, tooltipAnimationDuration * 0.5f)
+            //     .SetEase(Ease.InBack)
+            //     .OnComplete(() => tooltipPanel.SetActive(false)) 
+            //     .SetUpdate(true);
         }
     }
 
