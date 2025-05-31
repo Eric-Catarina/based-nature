@@ -1,8 +1,8 @@
-// Path: Assets/Scripts/EquipamentManager.cs
+
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EquipmentManager : MonoBehaviour // Corrigido para EquipmentManager
+public class EquipmentManager : MonoBehaviour 
 {
     public static EquipmentManager Instance { get; private set; }
 
@@ -25,9 +25,9 @@ public class EquipmentManager : MonoBehaviour // Corrigido para EquipmentManager
 
     void Start()
     {
-        // A inicialização é crítica. Se SaveSystem.LoadGame() for chamado antes deste Start,
-        // esta chamada a InitializeEquipmentSlots() limpará os itens carregados.
-        // A ordem de execução de scripts deve garantir que este Start rode antes do Start do SaveSystem.
+        
+        
+        
         InitializeEquipmentSlots();
     }
 
@@ -87,12 +87,12 @@ public class EquipmentManager : MonoBehaviour // Corrigido para EquipmentManager
 
         if (inventoryManager != null)
         {
-            if (inventorySlotIndexToRemoveFrom != -1) // Se veio de um slot de inventário
+            if (inventorySlotIndexToRemoveFrom != -1) 
             {
                 inventoryManager.RemoveItemFromSlot(inventorySlotIndexToRemoveFrom, 1);
             }
             
-            if (previouslyEquippedItem != null) // Se havia um item antes, retorna ao inventário
+            if (previouslyEquippedItem != null) 
             {
                 inventoryManager.AddItem(previouslyEquippedItem, 1);
             }
@@ -136,6 +136,6 @@ public class EquipmentManager : MonoBehaviour // Corrigido para EquipmentManager
 
     public Dictionary<EquipmentSlotType, ItemData> GetAllEquippedItems()
     {
-        return new Dictionary<EquipmentSlotType, ItemData>(_equippedItems); // Retorna uma cópia
+        return new Dictionary<EquipmentSlotType, ItemData>(_equippedItems); 
     }
 }

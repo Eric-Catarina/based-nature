@@ -1,4 +1,4 @@
-// Path: Assets/Scripts/ItemDatabase.cs
+
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ public class ItemDatabase : ScriptableObject
                 Debug.LogWarning("[ItemDatabase] Found a null ItemData in the 'allGameItems' list.");
                 continue;
             }
-            if (string.IsNullOrEmpty(item.id)) // ID é crucial
+            if (string.IsNullOrEmpty(item.id)) 
             {
                 Debug.LogError($"[ItemDatabase] Item asset '{item.name}' has a null or empty ID. Ensure ItemData.cs has OnValidate logic to assign GUIDs.");
                 continue;
@@ -58,7 +58,7 @@ public class ItemDatabase : ScriptableObject
         if (!_isInitialized || _itemDictionary == null) InitializeDatabase();
         
         _itemDictionary.TryGetValue(id, out ItemData item);
-        return item; // Retorna null se não encontrado
+        return item; 
     }
 
     #if UNITY_EDITOR
@@ -71,7 +71,7 @@ public class ItemDatabase : ScriptableObject
             .Where(item => item != null)
             .ToList();
         
-        RefreshDatabase(); // Re-inicializa o dicionário
+        RefreshDatabase(); 
         EditorUtility.SetDirty(this);
         Debug.Log($"[ItemDatabase] Populated with {allGameItems.Count} items from project. Dictionary has {_itemDictionary.Count} entries.");
     }

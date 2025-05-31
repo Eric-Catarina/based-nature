@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/NPC/TalkableNPC.cs
+
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
@@ -9,7 +9,7 @@ public class TalkableNPC : MonoBehaviour
     [SerializeField] [TextArea(3,10)] private string[] dialogueLines;
 
     [Header("Interaction Visuals")]
-    [SerializeField] private GameObject interactionCue; // Ex: "E to Talk"
+    [SerializeField] private GameObject interactionCue; 
 
     private DialogueSystem _dialogueSystem;
     private bool _playerInRange = false;
@@ -45,7 +45,7 @@ public class TalkableNPC : MonoBehaviour
             PlayerInteraction playerInteraction = other.GetComponent<PlayerInteraction>();
             if (playerInteraction != null)
             {
-                playerInteraction.RegisterTalkable(this); // Método a ser adicionado em PlayerInteraction
+                playerInteraction.RegisterTalkable(this); 
             }
             _playerInRange = true;
         }
@@ -58,13 +58,13 @@ public class TalkableNPC : MonoBehaviour
              PlayerInteraction playerInteraction = other.GetComponent<PlayerInteraction>();
             if (playerInteraction != null)
             {
-                playerInteraction.UnregisterTalkable(this); // Método a ser adicionado em PlayerInteraction
+                playerInteraction.UnregisterTalkable(this); 
             }
             _playerInRange = false;
         }
     }
 
-    // Este método é chamado pelo PlayerInteraction
+    
     public void StartOrAdvanceDialogue()
     {
         if (_dialogueSystem != null)

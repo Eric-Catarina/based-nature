@@ -1,12 +1,12 @@
-// Path: Assets/Scripts/SaveSystem.cs
+
 using UnityEngine;
 using System.Collections.Generic;
-using System.IO; // Necessário para File I/O
-using System;   // Necessário para System.Action
+using System.IO; 
+using System;   
 
-// Definições de Enum (coloque em um arquivo Enums.cs ou similar se preferir)
-// public enum EquipmentSlotType { None, Head, Torso, Legs, Feet, Weapon, Shield, Accessory }
-// public enum ItemType { Generic, Consumable, Equipment, Material, Key }
+
+
+
 
 
 [System.Serializable]
@@ -15,7 +15,7 @@ public class EquippedItemSaveData
     public EquipmentSlotType slotType;
     public string itemId;
 
-    public EquippedItemSaveData() { } // Construtor padrão para desserialização
+    public EquippedItemSaveData() { } 
     public EquippedItemSaveData(EquipmentSlotType type, string id)
     {
         slotType = type;
@@ -64,8 +64,8 @@ public class SaveSystem : MonoBehaviour
     
     private void Start()
     {
-        // Certifique-se de que a ordem de execução está correta para que LoadGame()
-        // funcione após os managers terem inicializado.
+        
+        
         LoadGame();
     }
 
@@ -119,10 +119,10 @@ public class SaveSystem : MonoBehaviour
             return;
         }
         
-        itemDatabase.RefreshDatabase(); // Garante que o ItemDatabase está atualizado
+        itemDatabase.RefreshDatabase(); 
         
-        // Crucial: Limpa os slots de equipamento ANTES de carregar os itens equipados.
-        // Isso deve acontecer depois que EquipmentManager.Start() já rodou (devido à ordem de execução).
+        
+        
         equipmentManager.InitializeEquipmentSlots(); 
 
         string json = "";
@@ -147,10 +147,10 @@ public class SaveSystem : MonoBehaviour
             GameSaveData gameData = JsonUtility.FromJson<GameSaveData>(json);
             if (gameData != null)
             {
-                // 1. Carregar Inventário
+                
                 inventoryManager.LoadSaveData(gameData.inventoryData ?? new List<InventorySlotSaveData>(), itemDatabase._itemDictionary);
 
-                // 2. Carregar Itens Equipados
+                
                 if (gameData.equippedItemsData != null)
                 {
                     foreach (var equippedItemSave in gameData.equippedItemsData)
@@ -158,11 +158,11 @@ public class SaveSystem : MonoBehaviour
                         ItemData itemToEquip = itemDatabase.GetItemByID(equippedItemSave.itemId);
                         if (itemToEquip != null && itemToEquip.isEquippable && itemToEquip.equipmentSlotType == equippedItemSave.slotType)
                         {
-                            bool equipped = equipmentManager.EquipItem(itemToEquip, -1); // -1 indica que não veio do inventário ao vivo
+                            bool equipped = equipmentManager.EquipItem(itemToEquip, -1); 
                             if (equipped)
                             {
-                                // Remove o item do inventário se ele também foi carregado lá (para evitar duplicatas)
-                                // inventoryManager.RemoveSpecificItem(itemToEquip, 1); 
+                                
+                                
                             }
                         }
                         else

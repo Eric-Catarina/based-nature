@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/Player/PlayerInteraction.cs
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -105,8 +105,8 @@ public class PlayerInteraction : MonoBehaviour
             if (_closestInteractable == interactable)
             {
                 interactable.ShowCue(false);
-                interactable.RemoveOutline(); // Remove outline se ele estava selecionado
-                _closestInteractable = null; // Limpa a referência
+                interactable.RemoveOutline(); 
+                _closestInteractable = null; 
             }
             _nearbyInteractables.Remove(interactable);
         }
@@ -137,12 +137,12 @@ public class PlayerInteraction : MonoBehaviour
             if (oldClosest != null)
             {
                 oldClosest.ShowCue(false);
-                oldClosest.RemoveOutline(); // Remove outline do antigo mais próximo
+                oldClosest.RemoveOutline(); 
             }
             if (_closestInteractable != null)
             {
                 _closestInteractable.ShowCue(true);
-                _closestInteractable.ApplyOutline(); // Aplica outline ao novo mais próximo
+                _closestInteractable.ApplyOutline(); 
             }
         }
     }
@@ -162,7 +162,7 @@ public class PlayerInteraction : MonoBehaviour
              if(_closestTalkable == talkable)
              {
                 talkable.ShowInteractionCue(false);
-                _closestTalkable = null; // Limpa a referência
+                _closestTalkable = null; 
              }
             _nearbyTalkables.Remove(talkable);
         }
@@ -219,16 +219,16 @@ public class PlayerInteraction : MonoBehaviour
             }
             Debug.Log($"Picked up {quantityToPick}x {itemToPick.itemName} from {_closestInteractable.gameObject.name}");
 
-            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); // Toca o som de pickup
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); 
             GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
-            // A referência _closestInteractable será limpa pelo UnregisterInteractable que é chamado
-            // implicitamente quando o objeto é destruído e seu OnTriggerExit é disparado,
-            // ou podemos limpar explicitamente aqui ANTES de destruir.
-            // Para ser seguro, vamos limpar aqui também, embora o Unregister já deva cuidar.
-            UnregisterInteractable(_closestInteractable); // Garante que o outline é removido
+            
+            
+            
+            
+            UnregisterInteractable(_closestInteractable); 
 
             Destroy(itemGameObjectToDestroy);
-            // _closestInteractable = null; // Já feito por UnregisterInteractable
+            
         }
         else
         {

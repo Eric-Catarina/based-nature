@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/Player/PlayerMovement.cs
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float rotationSpeed = 720f; // Degrees per second
+    [SerializeField] private float rotationSpeed = 720f; 
     [SerializeField] private float groundCheckDistance = 0.2f;
     [SerializeField] private LayerMask groundLayer;
 
@@ -38,12 +38,12 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogError("Main Camera not found. Player movement might not work as expected relative to camera.");
         }
 
-        _rigidbody.freezeRotation = true; // Prevent Rigidbody from tipping over
+        _rigidbody.freezeRotation = true; 
 
-        // --- CURSOR CONTROL ---
+        
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        // --- END CURSOR CONTROL ---
+        
     }
 
     private void OnEnable()
@@ -106,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-             // Apply less control in air if desired, or simply maintain horizontal velocity.
+             
             _rigidbody.linearVelocity = new Vector3(targetVelocity.x * 0.8f, _rigidbody.linearVelocity.y, targetVelocity.z * 0.8f);
         }
     }

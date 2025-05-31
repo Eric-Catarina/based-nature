@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/UI/InventoryUI.cs
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
@@ -10,10 +10,10 @@ public class InventoryUI : MonoBehaviour
     [Header("Core References")]
 
     [SerializeField] private InventoryManager inventoryManager;
-    [SerializeField] private GameObject inventoryPanel; // The root panel of the inventory UI
-    [SerializeField] private Transform slotContainer; // Parent object with GridLayoutGroup for slots
+    [SerializeField] private GameObject inventoryPanel; 
+    [SerializeField] private Transform slotContainer; 
     [SerializeField] private InventorySlotUI slotPrefab;
-    [SerializeField] private GameObject equipmentPanel; // NEW: Reference to the Equipment Panel GameObject
+    [SerializeField] private GameObject equipmentPanel; 
 
     [Header("Tooltip References")]
     [SerializeField] private GameObject tooltipPanel;
@@ -23,14 +23,14 @@ public class InventoryUI : MonoBehaviour
 
     [Header("Drag & Drop Visuals")]
     [SerializeField] public Image draggedItemImage;
-    private CanvasGroup inventoryCanvasGroup; // Optional: CanvasGroup for fade effects
+    private CanvasGroup inventoryCanvasGroup; 
 
     private List<InventorySlotUI> _slotUIInstances = new List<InventorySlotUI>();
     private PlayerControls _playerControls;
     private bool _isPanelOpen = false;
     private RectTransform _inventoryPanelRectTransform;
 
-    private int _draggedFromSlotIndex = -1; // Stores index if dragging FROM inventory slot
+    private int _draggedFromSlotIndex = -1; 
 
     private void Awake()
     {
@@ -43,7 +43,7 @@ public class InventoryUI : MonoBehaviour
         if (inventoryPanel == null) Debug.LogError("InventoryPanel not assigned to InventoryUI.");
         if (slotContainer == null) Debug.LogError("SlotContainer not assigned to InventoryUI.");
         if (slotPrefab == null) Debug.LogError("SlotPrefab not assigned to InventoryUI.");
-        if (equipmentPanel == null) Debug.LogError("EquipmentPanel not assigned to InventoryUI."); // Check new reference
+        if (equipmentPanel == null) Debug.LogError("EquipmentPanel not assigned to InventoryUI."); 
 
         if (draggedItemImage) draggedItemImage.gameObject.SetActive(false);
         if (tooltipPanel) tooltipPanel.SetActive(false);
@@ -57,10 +57,10 @@ public class InventoryUI : MonoBehaviour
         }
         else
         {
-            inventoryCanvasGroup.alpha = 1f; // Ensure it's fully visible at start
+            inventoryCanvasGroup.alpha = 1f; 
         }
         _inventoryPanelRectTransform = inventoryPanel.GetComponent<RectTransform>();
-        // ClosePanel();
+        
     }
 
     private void OnEnable()
@@ -99,7 +99,7 @@ public class InventoryUI : MonoBehaviour
 
     private void Update()
     {
-        // No need to update draggedItemImage position here, InventorySlotUI.OnDrag does it
+        
     }
 
     private void TogglePanelInput(InputAction.CallbackContext context)
@@ -111,20 +111,20 @@ public class InventoryUI : MonoBehaviour
     public void OpenPanel()
     {
         inventoryPanel.SetActive(true);
-        if (equipmentPanel) equipmentPanel.SetActive(true); // NEW: Activate equipment panel
+        if (equipmentPanel) equipmentPanel.SetActive(true); 
         _isPanelOpen = true;
         Time.timeScale = 0f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         UITweenAnimations.PanelAppear(_inventoryPanelRectTransform, 0.3f);
-        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.pickItemSound); // Play hover sound when opening panel
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.pickItemSound); 
     }
 
 public void ClosePanel()
     {
         if (!_isPanelOpen) return;
 
-        _isPanelOpen = false; // Set false first to prevent repeated triggers
+        _isPanelOpen = false; 
 
         HideTooltip();
         Time.timeScale = 1f;
@@ -287,7 +287,7 @@ public void ClosePanel()
 
         if (dropTargetObject != null)
         {
-            // First, try to drop on an InventorySlotUI
+            
             InventorySlotUI targetInventorySlotUI = dropTargetObject.GetComponentInParent<InventorySlotUI>();
             if (targetInventorySlotUI != null)
             {
@@ -300,10 +300,10 @@ public void ClosePanel()
                 {
                     UpdateSpecificSlotUI(fromIndex);
                 }
-                return; // Handled drop on an InventorySlotUI
+                return; 
             }
 
-            // If not an InventorySlotUI, try to drop on an EquipmentSlotUI
+            
             EquipmentSlotUI targetEquipmentSlotUI = dropTargetObject.GetComponentInParent<EquipmentSlotUI>();
             if (targetEquipmentSlotUI != null)
             {
@@ -311,24 +311,24 @@ public void ClosePanel()
                 if (itemToEquip != null && itemToEquip.isEquippable && itemToEquip.equipmentSlotType == targetEquipmentSlotUI.slotType)
                 {
                     EquipmentManager.Instance.EquipItem(itemToEquip, fromIndex);
-                    // EquipItem will handle removal from inventory and updating both UIs
+                    
                 }
                 else
                 {
                     Debug.LogWarning($"Cannot equip {itemToEquip?.itemName ?? "null"} to {targetEquipmentSlotUI.slotType} slot. Item not equipable or wrong slot type.");
-                    UpdateSpecificSlotUI(fromIndex); // Visually return item to original inventory slot
+                    UpdateSpecificSlotUI(fromIndex); 
                 }
-                return; // Handled drop on an EquipmentSlotUI
+                return; 
             }
         }
 
-        // If dropped outside any valid slot (Inventory or Equipment)
+        
         Debug.Log("Item dropped outside a valid slot.");
-        // Delete item
+        
         ItemData itemToReturn = inventoryManager.GetSlotAtIndex(fromIndex).itemData;
         if (itemToReturn != null)
         {
-            inventoryManager.RemoveItemFromSlot(fromIndex, 1); // Remove item from inventory
+            inventoryManager.RemoveItemFromSlot(fromIndex, 1); 
             Debug.Log($"Item {itemToReturn.itemName} removed from inventory.");
         }
         else
@@ -340,11 +340,11 @@ public void ClosePanel()
     
       private EquipmentSlotType _draggedFromEquipmentSlotType = EquipmentSlotType.None;
 
-    // ... (rest of Awake, OnEnable, OnDisable, Start, Update, TogglePanelInput, OpenPanel, ClosePanel) ...
+    
 
     public void OnDragStartedFromEquipment(ItemData itemToDrag, EquipmentSlotType fromSlotType)
     {
-        _draggedFromSlotIndex = -1; // Ensure inventory index is not used
+        _draggedFromSlotIndex = -1; 
         _draggedFromEquipmentSlotType = fromSlotType;
 
         if (draggedItemImage != null)
@@ -364,7 +364,7 @@ public void ClosePanel()
 
     public void OnDragEndedFromEquipment(EquipmentSlotType originalFromSlotType, GameObject dropTargetObject)
     {
-        // Reset drag source
+        
         _draggedFromEquipmentSlotType = EquipmentSlotType.None;
 
         if (draggedItemImage != null)
@@ -372,28 +372,28 @@ public void ClosePanel()
             draggedItemImage.gameObject.SetActive(false);
         }
 
-        if (originalFromSlotType == EquipmentSlotType.None) return; // No valid item was dragged
+        if (originalFromSlotType == EquipmentSlotType.None) return; 
 
         if (dropTargetObject != null)
         {
-            // Try to drop on an InventorySlotUI
+            
             InventorySlotUI targetInventorySlotUI = dropTargetObject.GetComponentInParent<InventorySlotUI>();
             if (targetInventorySlotUI != null)
             {
-                // Unequip item and try to add to inventory
+                
                 ItemData itemToUnequip = EquipmentManager.Instance.GetEquippedItem(originalFromSlotType);
                 if (itemToUnequip != null)
                 {
                     EquipmentManager.Instance.UnequipItem(originalFromSlotType);
-                    // Add the unequipped item to the inventory (it will try to add to targetInventorySlotUI's index if possible)
-                    // InventoryManager.Instance.AddItem(itemToUnequip); // AddItem will find an available slot
-                    // The specific target slot for unequipped items is usually handled by AddItem finding the next available.
-                    // If you want to force it to a specific slot, InventoryManager would need a modified AddItem or SetSlotData.
+                    
+                    
+                    
+                    
                 }
-                return; // Handled drop on an InventorySlotUI
+                return; 
             }
 
-            // Try to drop on another EquipmentSlotUI (for swapping)
+            
             EquipmentSlotUI targetEquipmentSlotUI = dropTargetObject.GetComponentInParent<EquipmentSlotUI>();
             if (targetEquipmentSlotUI != null)
             {
@@ -401,33 +401,33 @@ public void ClosePanel()
                 ItemData sourceItem = EquipmentManager.Instance.GetEquippedItem(originalFromSlotType);
                 ItemData targetItem = EquipmentManager.Instance.GetEquippedItem(targetEquipmentSlotUI.slotType);
 
-                // Check if target slot is suitable for source item
+                
                 if (sourceItem != null && sourceItem.isEquippable && sourceItem.equipmentSlotType == targetEquipmentSlotUI.slotType)
                 {
-                    // Unequip target item first (it goes to inventory)
+                    
                     if (targetItem != null)
                     {
                         EquipmentManager.Instance.UnequipItem(targetEquipmentSlotUI.slotType);
                     }
                     
-                    // Equip source item to target slot (it will remove from originalFromSlotType)
-                    EquipmentManager.Instance.EquipItem(sourceItem, -1); // -1 indicates it's already "removed" from equipment slot logic
+                    
+                    EquipmentManager.Instance.EquipItem(sourceItem, -1); 
                 }
                 else
                 {
                     Debug.LogWarning($"Cannot swap {sourceItem?.itemName ?? "null"} to {targetEquipmentSlotUI.slotType} slot. Item not suitable.");
-                    // Item returns visually to original equipment slot via event update
+                    
                 }
-                return; // Handled drop on an EquipmentSlotUI (potentially a swap)
+                return; 
             }
         }
         
-        // If dropped outside any valid slot (Inventory or Equipment)
-        // Item dragged from equipment, unequip it back to inventory
+        
+        
         ItemData itemToReturn = EquipmentManager.Instance.GetEquippedItem(originalFromSlotType);
         if (itemToReturn != null)
         {
-            EquipmentManager.Instance.UnequipItem(originalFromSlotType); // This adds it to inventory
+            EquipmentManager.Instance.UnequipItem(originalFromSlotType); 
             Debug.Log($"Item {itemToReturn.itemName} unequipped and returned to inventory.");
         }
         else

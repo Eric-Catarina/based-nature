@@ -1,4 +1,4 @@
-// Path: Assets/Scripts/InventoryManager.cs
+
 using UnityEngine;
 using System.Collections.Generic;
 using System;
@@ -93,7 +93,7 @@ public class InventoryManager : MonoBehaviour
         {
              Debug.LogWarning($"[InventoryManager] Inventory full. Could not add any of {item.itemName}.");
         }
-        else if (itemAdded && quantity > 0) // Some items added, but not all
+        else if (itemAdded && quantity > 0) 
         {
              Debug.LogWarning($"[InventoryManager] Inventory partially full. Could not add all {originalQuantity} of {item.itemName}. {quantity} remaining.");
         }
@@ -221,21 +221,21 @@ public class InventoryManager : MonoBehaviour
         {
             if (itemToUse.itemType == ItemType.Consumable)
             {
-                // AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); // Exemplo
+                
                 RemoveItemFromSlot(slotIndex, 1);
             }
-            // Adicionar outras lógicas de uso aqui
+            
         }
         else if (itemToUse.isEquippable)
         {
-            // Lógica de equipar normalmente é tratada pela UI (drag-drop, right-click menu)
+            
         }
     }
 
     public List<InventorySlotSaveData> GetSaveData()
     {
         List<InventorySlotSaveData> saveData = new List<InventorySlotSaveData>();
-        for (int i = 0; i < _inventorySlots.Count; i++) // Salva todos os slots, incluindo vazios
+        for (int i = 0; i < _inventorySlots.Count; i++) 
         {
             InventorySlotData slot = _inventorySlots[i];
             if (!slot.IsEmpty())
@@ -244,7 +244,7 @@ public class InventoryManager : MonoBehaviour
             }
             else
             {
-                saveData.Add(new InventorySlotSaveData(null, 0)); // Representa slot vazio
+                saveData.Add(new InventorySlotSaveData(null, 0)); 
             }
         }
         return saveData;
@@ -260,11 +260,11 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
-        InitializeInventory(); // Limpa e re-inicializa para o tamanho correto
+        InitializeInventory(); 
         
         if (slotSaveDataList == null) 
         {
-            OnInventoryChanged?.Invoke(); // Notifica a UI que o inventário está (agora) vazio
+            OnInventoryChanged?.Invoke(); 
             return;
         }
         
@@ -281,14 +281,14 @@ public class InventoryManager : MonoBehaviour
                     }
                     else
                     {
-                        // Item ID não encontrado, slot permanece vazio
+                        
                     }
                 }
-                // else, slot estava vazio no save, permanece vazio
+                
             }
-            // else, save data é menor que o inventário, slots extras permanecem vazios
-            OnInventorySlotChanged?.Invoke(i); // Atualiza a UI para cada slot
+            
+            OnInventorySlotChanged?.Invoke(i); 
         }
-        OnInventoryChanged?.Invoke(); // Notificação final para a UI
+        OnInventoryChanged?.Invoke(); 
     }
 }

@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/UI/DialogueSystem.cs
+
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
@@ -24,15 +24,15 @@ public class DialogueSystem : MonoBehaviour
 
         if (playerInput == null)
         {
-            playerInput = FindAnyObjectByType<PlayerInput>(); // Tenta encontrar o PlayerInput
+            playerInput = FindAnyObjectByType<PlayerInput>(); 
             if (playerInput == null) Debug.LogError("PlayerInput component not found for DialogueSystem Action Map switching.");
         }
     }
 
     private void OnEnable()
     {
-        _playerControls.UI.Enable(); // O mapa UI é onde esperamos o input de diálogo
-        _playerControls.UI.Submit.performed += ctx => AdvanceFromInput(); // Usando Submit (Enter) do mapa UI
+        _playerControls.UI.Enable(); 
+        _playerControls.UI.Submit.performed += ctx => AdvanceFromInput(); 
     }
 
     private void OnDisable()
@@ -45,7 +45,7 @@ public class DialogueSystem : MonoBehaviour
     {
         if (npc == null) return;
 
-        if (!_isDialogueActive || _currentNPC != npc) // Começando um novo diálogo ou com novo NPC
+        if (!_isDialogueActive || _currentNPC != npc) 
         {
             Debug.Log($"Starting dialogue with {npc.GetNpcName()}");
             _currentNPC = npc;
@@ -56,15 +56,15 @@ public class DialogueSystem : MonoBehaviour
 
             if (playerInput != null)
             {
-                playerInput.SwitchCurrentActionMap("UI"); // Mudar para mapa de UI onde Submit avança
+                playerInput.SwitchCurrentActionMap("UI"); 
             }
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            Time.timeScale = 0f; // Pausa o jogo durante o diálogo
+            Time.timeScale = 0f; 
             UITweenAnimations.PanelAppear(dialoguePanel.GetComponent<RectTransform>(), 0.3f);
 
         }
-        else // Avançando o diálogo com o mesmo NPC
+        else 
         {
             _currentDialogueLineIndex++;
         }
@@ -76,9 +76,9 @@ public class DialogueSystem : MonoBehaviour
     {
         if (_isDialogueActive && _currentNPC != null)
         {
-            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.conversationSound); // Play hover sound when showing tooltip
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.conversationSound); 
 
-            StartOrAdvanceDialogue(_currentNPC); // Chama para avançar a linha
+            StartOrAdvanceDialogue(_currentNPC); 
         }
     }
 
@@ -93,9 +93,9 @@ public class DialogueSystem : MonoBehaviour
         }
         else
         {
-            // --- CORREÇÃO: Chamar EndDialogue quando não houver mais linhas ---
+            
             EndDialogue();
-            // --- Fim Correção ---
+            
         }
     }
 
@@ -103,16 +103,16 @@ public class DialogueSystem : MonoBehaviour
     {
         _isDialogueActive = false;
         _currentNPC = null;
-        // if (dialoguePanel) dialoguePanel.SetActive(false);
+        
 
         if (playerInput != null)
         {
-            playerInput.SwitchCurrentActionMap("Gameplay"); // Retorna ao mapa de gameplay
+            playerInput.SwitchCurrentActionMap("Gameplay"); 
         }
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        Time.timeScale = 1f; // Despausa o jogo
-        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.endConversationSound); // Play hover sound when showing tooltip
+        Time.timeScale = 1f; 
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.endConversationSound); 
             UITweenAnimations.PanelDisappear(dialoguePanel.GetComponent<RectTransform>(), 0.3f, onComplete: () =>
             {
                 dialoguePanel.SetActive(false);

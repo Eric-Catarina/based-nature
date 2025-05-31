@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/Inventory/InventorySlotSaveData.cs
+
 [System.Serializable]
 public class InventorySlotSaveData
 {

@@ -1,4 +1,4 @@
-// Path: Assets/_ProjectName/Scripts/UI/InventorySlotUI.cs
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -81,7 +81,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (_inventoryUIController != null && _currentSlotData != null && !_currentSlotData.IsEmpty())
         {
-            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.hoverSound); // Play hover sound when showing tooltip
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.hoverSound); 
 
             _inventoryUIController.ShowTooltip(_currentSlotData.itemData, GetComponent<RectTransform>());
 
@@ -97,7 +97,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             _inventoryUIController.HideTooltip();
             UITweenAnimations.UnhoverScale(transform as RectTransform, _originalScale.x);
-            if (itemIconImage) UITweenAnimations.UnhoverColor(itemIconImage, _originalColor); // Reseta a cor original
+            if (itemIconImage) UITweenAnimations.UnhoverColor(itemIconImage, _originalColor); 
             if (selectionHighlight) selectionHighlight.SetActive(false);
         }
     }
@@ -125,9 +125,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (itemIconImage) itemIconImage.color = new Color(1, 1, 1, 0.5f);
         if (quantityText) quantityText.enabled = false;
         if (quantityBackground) quantityBackground.SetActive(false);
-        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.onDragSound); // Play hover sound when showing tooltip
-        UITweenAnimations.HoverScale(itemIconImage.rectTransform); // Optional: Add a hover effect on drag start
-        StartJiggle(); // Inicia o jiggle quando o item é arrastado
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.onDragSound); 
+        UITweenAnimations.HoverScale(itemIconImage.rectTransform); 
+        StartJiggle(); 
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -146,17 +146,17 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         {
             _inventoryUIController.OnDragEnded(_slotIndex, eventData.pointerCurrentRaycast.gameObject);
         }
-        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.onDropSound); // Play hover sound when showing tooltip
+        AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.onDropSound); 
 
-        UpdateSlotDisplay(_currentSlotData); // Ensure the original slot visuals are restored or updated
-        StopJiggle(); // Para o jiggle quando o item é solto
+        UpdateSlotDisplay(_currentSlotData); 
+        StopJiggle(); 
     }
 
     public void OnDrop(PointerEventData eventData)
     {
                  StopJiggle();
-        // The drop logic is handled by OnEndDrag of the item being dragged,
-        // using eventData.pointerCurrentRaycast.gameObject to determine the drop target.
+        
+        
     }
     private void StartJiggle()
     {
@@ -172,8 +172,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         if (_jiggleSequence != null && _jiggleSequence.IsActive())
         {
-            _jiggleSequence.Kill(); // Para a animação
-            (_inventoryUIController.draggedItemImage.transform as RectTransform).DORotate(Vector3.zero, 0.1f).SetUpdate(true); // Garante que volta para a rotação inicial
+            _jiggleSequence.Kill(); 
+            (_inventoryUIController.draggedItemImage.transform as RectTransform).DORotate(Vector3.zero, 0.1f).SetUpdate(true); 
         }
     }
 }
