@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8bab290125acb55192df7981cf8a680, type: 3}
+  m_Name: Pumpkin
+  m_EditorClassIdentifier: 
+  id: af0ab8bf14dfc6ece92d1957944933a2
+  itemName: Pumpkin
+  description: A big and orange pumpkin
+  icon: {fileID: 21300000, guid: 20d3763c3bae415dd89d9646f234cc65, type: 3}
+  itemType: 0
+  isStackable: 1
+  maxStackSize: 3
+  isUsable: 0
+  isEquippable: 0
+  equipmentSlotType: 0

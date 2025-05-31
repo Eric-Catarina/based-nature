@@ -184,7 +184,7 @@ public class InteractableWorldItem : MonoBehaviour
 
         
         
-        _waveTween = transform.DOLocalMoveY(transform.position.y + waveHeight, waveDuration * 0.5f)
+        _waveTween = transform.DOLocalMoveY(waveHeight, waveDuration * 0.5f)
             .SetEase(Ease.InOutSine) 
             .SetLoops(-1, LoopType.Yoyo) 
             .SetRelative(true); 

@@ -26,6 +26,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
+                Application.targetFrameRate = 60; // Ensure consistent frame rate for smoother movement
+
         _rigidbody = GetComponent<Rigidbody>();
         _playerControls = new PlayerControls();
 
