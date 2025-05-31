@@ -104,6 +104,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (_isGrounded)
         {
+            TurnOnCursor();
             _rigidbody.linearVelocity = new Vector3(targetVelocity.x, _rigidbody.linearVelocity.y, targetVelocity.z);
         }
         else
@@ -167,5 +168,11 @@ public class PlayerMovement : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    private void TurnOnCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
