@@ -2,28 +2,26 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
-using System.Linq; // Importar para usar Linq (RemoveAll)
+using System.Linq;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    [SerializeField] private SoundEffectDefinition interactSound; // Definição do som de interação
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private Transform interactionPoint;
     [SerializeField] private float interactionRadius = 2f;
     [SerializeField] private DialogueSystem dialogueSystem;
-private float _lastInteractionTime;
-[SerializeField] private float interactionCooldown = 0.2f; // Ajuste este valor
-    // --- Correção: Declarar ambas as listas aqui ---
+
+    private PlayerControls _playerControls;
     private List<TalkableNPC> _nearbyTalkables = new List<TalkableNPC>();
     private List<InteractableWorldItem> _nearbyInteractables = new List<InteractableWorldItem>();
-    // --- Fim Correção ---
-    private PlayerControls _playerControls;
 
     private TalkableNPC _closestTalkable;
     private InteractableWorldItem _closestInteractable;
 
     [SerializeField] private Animator playerAnimator;
     private readonly int _interactTriggerHash = Animator.StringToHash("Interact");
+    private float _lastInteractionTime;
+    [SerializeField] private float interactionCooldown = 0.2f;
 
 
     private void Awake()
@@ -35,7 +33,7 @@ private float _lastInteractionTime;
         }
         if (dialogueSystem == null)
         {
-            Debug.LogError("DialogueSystem not assigned to PlayerInteraction.");
+             Debug.LogError("DialogueSystem not assigned to PlayerInteraction.");
         }
         if (playerAnimator == null)
         {
@@ -67,30 +65,30 @@ private float _lastInteractionTime;
         FindClosestTalkable();
     }
 
-private void OnInteractInput(InputAction.CallbackContext context)
-{
-    if (Time.time - _lastInteractionTime < interactionCooldown) // Limita as interações muito rápidas
+    private void OnInteractInput(InputAction.CallbackContext context)
     {
-        return; // Ignora o input se estiver no cooldown
-    }
+        if (Time.time - _lastInteractionTime < interactionCooldown)
+        {
+            return;
+        }
 
-    if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
-    {
-        return;
-    }
+        if (dialogueSystem != null && dialogueSystem.IsDialogueActive())
+        {
+             return;
+        }
 
-    if (_closestTalkable != null)
-    {
-        _closestTalkable.StartOrAdvanceDialogue();
-        if (playerAnimator != null) playerAnimator.SetTrigger(_interactTriggerHash);
-        _lastInteractionTime = Time.time; // Salva o tempo da interação
+        if (_closestTalkable != null)
+        {
+            _closestTalkable.StartOrAdvanceDialogue();
+            if (playerAnimator != null) playerAnimator.SetTrigger(_interactTriggerHash);
+            _lastInteractionTime = Time.time;
+        }
+        else if (_closestInteractable != null)
+        {
+            TryInteract();
+            _lastInteractionTime = Time.time;
+        }
     }
-    else if (_closestInteractable != null)
-    {
-        TryInteract();
-        _lastInteractionTime = Time.time; // Salva o tempo da interação
-    }
-}
 
     public void RegisterInteractable(InteractableWorldItem interactable)
     {
@@ -102,18 +100,15 @@ private void OnInteractInput(InputAction.CallbackContext context)
 
     public void UnregisterInteractable(InteractableWorldItem interactable)
     {
-        if (_nearbyInteractables.Contains(interactable))
+        if (interactable != null && _nearbyInteractables.Contains(interactable))
         {
-            // Esconder cue apenas se era o mais próximo
             if (_closestInteractable == interactable)
+            {
                 interactable.ShowCue(false);
-
+                interactable.RemoveOutline(); // Remove outline se ele estava selecionado
+                _closestInteractable = null; // Limpa a referência
+            }
             _nearbyInteractables.Remove(interactable);
-        }
-        // Limpar referência _closestInteractable se for o item que saiu do raio ou foi pego
-        if (_closestInteractable == interactable)
-        {
-            _closestInteractable = null;
         }
     }
 
@@ -123,9 +118,7 @@ private void OnInteractInput(InputAction.CallbackContext context)
         _closestInteractable = null;
         float minDistance = float.MaxValue;
 
-        // --- Correção: Limpeza de itens nulos para a lista correta ---
         _nearbyInteractables.RemoveAll(item => item == null);
-        // --- Fim Correção ---
 
         foreach (var interactable in _nearbyInteractables)
         {
@@ -139,11 +132,18 @@ private void OnInteractInput(InputAction.CallbackContext context)
             }
         }
 
-        // Mostrar/Esconder cue apenas se o item mais próximo mudou
         if (oldClosest != _closestInteractable)
         {
-            if (oldClosest != null) oldClosest.ShowCue(false);
-            if (_closestInteractable != null) _closestInteractable.ShowCue(true);
+            if (oldClosest != null)
+            {
+                oldClosest.ShowCue(false);
+                oldClosest.RemoveOutline(); // Remove outline do antigo mais próximo
+            }
+            if (_closestInteractable != null)
+            {
+                _closestInteractable.ShowCue(true);
+                _closestInteractable.ApplyOutline(); // Aplica outline ao novo mais próximo
+            }
         }
     }
 
@@ -157,17 +157,14 @@ private void OnInteractInput(InputAction.CallbackContext context)
 
     public void UnregisterTalkable(TalkableNPC talkable)
     {
-        if (_nearbyTalkables.Contains(talkable))
+        if (talkable != null && _nearbyTalkables.Contains(talkable))
         {
-             // Esconder cue apenas se era o mais próximo
-             if(_closestTalkable == talkable) talkable.ShowInteractionCue(false);
-
+             if(_closestTalkable == talkable)
+             {
+                talkable.ShowInteractionCue(false);
+                _closestTalkable = null; // Limpa a referência
+             }
             _nearbyTalkables.Remove(talkable);
-        }
-         // Limpar referência _closestTalkable se for o NPC que saiu do raio
-        if (_closestTalkable == talkable)
-        {
-            _closestTalkable = null;
         }
     }
 
@@ -177,9 +174,7 @@ private void OnInteractInput(InputAction.CallbackContext context)
         _closestTalkable = null;
         float minDistance = float.MaxValue;
 
-        // --- Correção: Limpeza de NPCs nulos para a lista correta ---
         _nearbyTalkables.RemoveAll(npc => npc == null);
-        // --- Fim Correção ---
 
         foreach (var talkable in _nearbyTalkables)
         {
@@ -192,7 +187,6 @@ private void OnInteractInput(InputAction.CallbackContext context)
             }
         }
 
-        // Mostrar/Esconder cue apenas se o NPC mais próximo mudou
         if (oldClosest != _closestTalkable)
         {
             if(oldClosest != null) oldClosest.ShowInteractionCue(false);
@@ -203,10 +197,9 @@ private void OnInteractInput(InputAction.CallbackContext context)
 
     public void TryInteract()
     {
-        // Este método agora só é chamado se _closestTalkable for null
         if (_closestInteractable == null || inventoryManager == null)
         {
-            return; // Nada para interagir (item) ou InventoryManager faltando
+            return;
         }
 
         ItemData itemToPick = _closestInteractable.GetItemData();
@@ -224,23 +217,22 @@ private void OnInteractInput(InputAction.CallbackContext context)
             {
                 playerAnimator.SetTrigger(_interactTriggerHash);
             }
-            // --- Correção: Usar itemToPick.displayName ---
-            Debug.Log($"Picked up {quantityToPick}x {itemToPick.name} from {_closestInteractable.gameObject.name}");
-            // --- Fim Correção ---
+            Debug.Log($"Picked up {quantityToPick}x {itemToPick.itemName} from {_closestInteractable.gameObject.name}");
 
-            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); // Toca o som de interação
-
+            AudioManager.Instance.PlaySoundEffect(AudioManager.Instance.equipSound); // Toca o som de pickup
             GameObject itemGameObjectToDestroy = _closestInteractable.gameObject;
-
-            UnregisterInteractable(_closestInteractable); // Remove da lista _nearbyInteractables e limpa _closestInteractable se for o item correto
+            // A referência _closestInteractable será limpa pelo UnregisterInteractable que é chamado
+            // implicitamente quando o objeto é destruído e seu OnTriggerExit é disparado,
+            // ou podemos limpar explicitamente aqui ANTES de destruir.
+            // Para ser seguro, vamos limpar aqui também, embora o Unregister já deva cuidar.
+            UnregisterInteractable(_closestInteractable); // Garante que o outline é removido
 
             Destroy(itemGameObjectToDestroy);
+            // _closestInteractable = null; // Já feito por UnregisterInteractable
         }
         else
         {
-            // --- Correção: Usar itemToPick.name ---
-            Debug.LogWarning($"Could not pick up {itemToPick.name}. Inventory full or AddItem failed.");
-             // --- Fim Correção ---
+            Debug.LogWarning($"Could not pick up {itemToPick.itemName}. Inventory full or AddItem failed.");
         }
     }
 
