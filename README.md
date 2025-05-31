@@ -37,7 +37,7 @@ https://github.com/user-attachments/assets/a6938a02-2f7a-4954-b5d5-913e59166371
 
 1.  **Clone the Repository:**
     ```bash
-    git clone [your-repository-url]
+    git clone https://github.com/Eric-Catarina/based-nature.git
     ```
 2.  **Open in Unity:** Open the project with **Unity Hub** using **Unity version 6000.0.x** (or the specific version you used, e.g., 6000.0.3f1).
 3.  **Install Packages (if needed):**
