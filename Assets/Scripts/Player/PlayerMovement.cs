@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float rotationSpeed = 720f; 
+    [SerializeField] private float rotationSpeed = 720f;
     [SerializeField] private float groundCheckDistance = 0.2f;
     [SerializeField] private LayerMask groundLayer;
 
@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
-                Application.targetFrameRate = 60; // Ensure consistent frame rate for smoother movement
+        Application.targetFrameRate = 60;
 
         _rigidbody = GetComponent<Rigidbody>();
         _playerControls = new PlayerControls();
@@ -40,12 +40,12 @@ public class PlayerMovement : MonoBehaviour
 
         }
 
-        _rigidbody.freezeRotation = true; 
+        _rigidbody.freezeRotation = true;
 
-        
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        
+
+        // Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
+
     }
 
     private void OnEnable()
@@ -108,7 +108,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-             
+
             _rigidbody.linearVelocity = new Vector3(targetVelocity.x * 0.8f, _rigidbody.linearVelocity.y, targetVelocity.z * 0.8f);
         }
     }
@@ -145,5 +145,27 @@ public class PlayerMovement : MonoBehaviour
 
         playerAnimator.SetBool(_isMovingHash, velocityMagnitude > 0.01f);
         playerAnimator.SetFloat(_velocityMagnitudeHash, velocityMagnitude);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+
+    public void ToggleCursorLock()
+    {
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 }
